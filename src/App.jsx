@@ -1402,16 +1402,15 @@ function LandingScreen({ setPage }) {
               Global Business Account
             </div>
             <h1 style={{ fontSize:52, fontWeight:800, lineHeight:1.12, letterSpacing:"-1.5px", margin:"0 0 20px" }}>
-              <span style={{ color:T.black }}>One Account.</span><br />
-              <span style={{ color:T.redPrimary }}>Every Currency.</span><br />
+              <span style={{ color:T.redPrimary }}>Dedicated Account for Every Currency.</span><br />
               <span style={{ color:T.black }}>Zero Hassle.</span>
             </h1>
             <p style={{ fontSize:15, color:T.grey600, lineHeight:1.65, margin:"0 0 28px" }}>
-              Receive, hold, and send money in 30+ currencies with real local bank account details — all from a single dashboard.
+              Get 12 dedicated currency accounts — each with its own IBAN, routing number, and SWIFT code. Receive, hold, and send like a local, from one dashboard.
             </p>
             <div style={{ display:"flex", flexDirection:"column", gap:14, marginBottom:32 }}>
               {[
-                { icon:"🏦", title:"Local Account Details", sub:"Get real bank accounts in USD, EUR, GBP, and 9 more currencies" },
+                { icon:"🏦", title:"12 Dedicated Currency Accounts", sub:"One account per currency — USD, EUR, GBP, AUD, SGD, HKD, and 6 more" },
                 { icon:"🔄", title:"Live Exchange Rates", sub:"Convert between currencies at competitive mid-market rates" },
                 { icon:"⚡", title:"Fast Payments", sub:"Send via SWIFT, SEPA, ACH, Faster Payments & more" },
               ].map(vp => (
