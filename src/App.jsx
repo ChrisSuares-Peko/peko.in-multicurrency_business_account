@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { useState, useContext, createContext, useEffect } from "react";
+const DummyCtx = createContext(false);
+const useDummy = () => useContext(DummyCtx);
 
 /* ═══════════════════════════════════════════════════════════
    DESIGN TOKENS — Peko v3.1
@@ -29,11 +31,6 @@ const T = {
   sidebarW: 180,
   topbarH:  56,
 };
-
-/* ═══════════════════════════════════════════════════════════
-   CONTEXT
-═══════════════════════════════════════════════════════════ */
-const DummyCtx = createContext(false);
 
 /* ═══════════════════════════════════════════════════════════
    DATA
@@ -593,7 +590,7 @@ function Topbar({ setPage, dummy, setDummy }) {
       <div onClick={() => setPage("setup")} style={{ background:T.redGrad, color:T.white, borderRadius:8, padding:"4px 12px", fontSize:11, fontWeight:600, lineHeight:1.4, cursor:"pointer", textAlign:"center" }}>
         Claim your<br/>free credits
       </div>
-      <div onClick={() => setDummy(!dummy)} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", border:`1px solid ${dummy ? T.redPrimary : T.grey200}`, borderRadius:20, padding:"4px 10px", background:T.white }}>
+      <div onClick={() => setDummy(!dummy)} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", border:`1.5px solid ${dummy ? T.redPrimary : T.grey200}`, borderRadius:20, padding:"4px 10px", background: dummy ? T.redLight : T.grey50 }}>
         <div style={{ width:32, height:18, borderRadius:9, background: dummy ? T.redPrimary : T.grey200, position:"relative", transition:"background 0.2s" }}>
           <div style={{ position:"absolute", top:2, left: dummy ? 14 : 2, width:14, height:14, borderRadius:"50%", background:T.white, transition:"left 0.2s", boxShadow:"0 1px 3px rgba(0,0,0,0.2)" }} />
         </div>
@@ -602,7 +599,7 @@ function Topbar({ setPage, dummy, setDummy }) {
       <button style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${T.grey200}`, background:T.white, cursor:"pointer", fontSize:15, display:"flex", alignItems:"center", justifyContent:"center" }}>💬</button>
       <div style={{ position:"relative" }}>
         <button style={{ width:34, height:34, borderRadius:"50%", border:`1px solid ${T.grey200}`, background:T.white, cursor:"pointer", fontSize:15, display:"flex", alignItems:"center", justifyContent:"center" }}>🔔</button>
-        {dummy && <div style={{ position:"absolute", top:-4, right:-4, background:T.redPrimary, color:T.white, borderRadius:20, fontSize:10, fontWeight:700, padding:"1px 5px", minWidth:18, textAlign:"center" }}>27</div>}
+        <div style={{ position:"absolute", top:-4, right:-4, background:T.redPrimary, color:T.white, borderRadius:20, fontSize:10, fontWeight:700, padding:"1px 5px", minWidth:18, textAlign:"center" }}>{dummy ? 27 : 0}</div>
       </div>
       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
         <Avatar name="S" size={30} fontSize={13} />
@@ -1204,7 +1201,18 @@ function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy }) {
             </div>
           </div>
         </div>
-        <div style={{ marginTop:32 }}><Footer /></div>
+        {/* Danger Zone */}
+        <div style={{ marginTop:32, border:`1px solid ${T.redErrBorder}`, borderRadius:12, padding:"20px 24px", background:T.redErrBg, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <div>
+            <div style={{ fontSize:14, fontWeight:700, color:T.redErrText, marginBottom:3 }}>Close Account</div>
+            <div style={{ fontSize:13, color:T.redErrText, opacity:0.8 }}>Permanently close this {cur.code} wallet. Any remaining balance must be converted first.</div>
+          </div>
+          <button onClick={() => setPage("remove_modal")}
+            style={{ flexShrink:0, marginLeft:24, padding:"10px 20px", fontSize:13, fontWeight:600, color:T.redErrText, background:T.white, border:`1.5px solid ${T.redErrBorder}`, borderRadius:8, cursor:"pointer", fontFamily:T.font }}>
+            🗑 Close Account
+          </button>
+        </div>
+        <div style={{ marginTop:16 }}><Footer /></div>
       </div>
 
       {showReceive && <ReceiveModal cur={cur} onClose={() => setShowReceive(false)} />}
@@ -1344,43 +1352,71 @@ function AddCurrencyCard({ onClick }) {
 /* ═══════════════════════════════════════════════════════════
    LANDING SCREEN
 ═══════════════════════════════════════════════════════════ */
+const LANDING_CURRENCIES = [
+  { code:"USD", flag:"🇺🇸", name:"US Dollar" },
+  { code:"EUR", flag:"🇪🇺", name:"Euro" },
+  { code:"GBP", flag:"🇬🇧", name:"British Pound" },
+  { code:"AUD", flag:"🇦🇺", name:"Australian Dollar" },
+  { code:"CAD", flag:"🇨🇦", name:"Canadian Dollar" },
+  { code:"SGD", flag:"🇸🇬", name:"Singapore Dollar" },
+  { code:"HKD", flag:"🇭🇰", name:"Hong Kong Dollar" },
+  { code:"JPY", flag:"🇯🇵", name:"Japanese Yen" },
+  { code:"CNY", flag:"🇨🇳", name:"Chinese Yuan" },
+  { code:"IDR", flag:"🇮🇩", name:"Indonesian Rupiah" },
+  { code:"NZD", flag:"🇳🇿", name:"New Zealand Dollar" },
+  { code:"AED", flag:"🇦🇪", name:"UAE Dirham" },
+];
+
+const MOCKUP_WALLETS = [
+  { flag:"🇺🇸", code:"USD", country:"United States",  display:"$142,850.00" },
+  { flag:"🇪🇺", code:"EUR", country:"European Union", display:"€98,440.50" },
+  { flag:"🇬🇧", code:"GBP", country:"United Kingdom", display:"£67,320.00" },
+  { flag:"🇦🇺", code:"AUD", country:"Australia",      display:"A$34,910.75" },
+];
+
 function LandingScreen({ setPage }) {
   return (
     <div style={{ fontFamily:T.font, background:T.pageBg, minHeight:"100vh" }}>
-      <div style={{ background:T.white, borderBottom:`1px solid ${T.grey100}`, padding:"0 40px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
+
+      {/* Navbar */}
+      <div style={{ background:T.white, borderBottom:`1px solid ${T.grey100}`, padding:"0 56px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:36, height:36, borderRadius:8, background:T.redGrad, display:"flex", alignItems:"center", justifyContent:"center", color:T.white, fontSize:18, fontWeight:800 }}>P</div>
-          <span style={{ fontSize:18, fontWeight:700, color:T.black }}>peko</span>
+          <div style={{ width:32, height:32, borderRadius:8, background:T.redGrad, display:"flex", alignItems:"center", justifyContent:"center", color:T.white, fontSize:16, fontWeight:800 }}>P</div>
+          <span style={{ fontSize:16, fontWeight:700, color:T.black }}>peko</span>
         </div>
-        <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-          <span style={{ fontSize:14, color:T.grey600, cursor:"pointer" }}>Products</span>
-          <span style={{ fontSize:14, color:T.grey600, cursor:"pointer" }}>Pricing</span>
-          <span style={{ fontSize:14, color:T.grey600, cursor:"pointer" }}>About</span>
+        <div style={{ display:"flex", gap:28, alignItems:"center" }}>
+          <span style={{ fontSize:14, fontWeight:500, color:T.grey600, cursor:"pointer" }}>Products</span>
+          <span style={{ fontSize:14, fontWeight:500, color:T.grey600, cursor:"pointer" }}>Pricing</span>
+          <span style={{ fontSize:14, fontWeight:500, color:T.grey600, cursor:"pointer" }}>About</span>
           <BtnPrimary onClick={() => setPage("setup")} style={{ fontSize:14, padding:"9px 20px" }}>Open Global Account</BtnPrimary>
         </div>
       </div>
 
       {/* Hero */}
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"80px 40px 60px" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center" }}>
+      <div style={{ padding:"80px 56px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:72, alignItems:"center", maxWidth:1200, margin:"0 auto" }}>
+          {/* Left */}
           <div>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:T.redLight, color:T.redPrimary, borderRadius:20, padding:"4px 14px", fontSize:12, fontWeight:600, marginBottom:20 }}>🌍 Global Business Account</div>
-            <h1 style={{ fontSize:44, fontWeight:800, color:T.black, lineHeight:1.15, margin:"0 0 16px" }}>
-              One Account.<br />
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:T.redLight, color:T.redPrimary, borderRadius:20, padding:"4px 14px", fontSize:12, fontWeight:600, marginBottom:20 }}>
+              <span style={{ width:6, height:6, borderRadius:"50%", background:T.redPrimary, display:"inline-block" }} />
+              Global Business Account
+            </div>
+            <h1 style={{ fontSize:52, fontWeight:800, lineHeight:1.12, letterSpacing:"-1.5px", margin:"0 0 20px" }}>
+              <span style={{ color:T.black }}>One Account.</span><br />
               <span style={{ color:T.redPrimary }}>Every Currency.</span><br />
-              Zero Hassle.
+              <span style={{ color:T.black }}>Zero Hassle.</span>
             </h1>
-            <p style={{ fontSize:16, color:T.grey600, lineHeight:1.65, margin:"0 0 28px" }}>
+            <p style={{ fontSize:15, color:T.grey600, lineHeight:1.65, margin:"0 0 28px" }}>
               Receive, hold, and send money in 30+ currencies with real local bank account details — all from a single dashboard.
             </p>
             <div style={{ display:"flex", flexDirection:"column", gap:14, marginBottom:32 }}>
               {[
-                { icon:"🏦", title:"Local Account Details", sub:"Get real bank accounts in USD, EUR, GBP, and 27 more currencies" },
-                { icon:"💱", title:"Live Exchange Rates", sub:"Convert between currencies at competitive mid-market rates" },
-                { icon:"⚡", title:"Fast Payments", sub:"Send payments via SWIFT, SEPA, ACH, Faster Payments & more" },
+                { icon:"🏦", title:"Local Account Details", sub:"Get real bank accounts in USD, EUR, GBP, and 9 more currencies" },
+                { icon:"🔄", title:"Live Exchange Rates", sub:"Convert between currencies at competitive mid-market rates" },
+                { icon:"⚡", title:"Fast Payments", sub:"Send via SWIFT, SEPA, ACH, Faster Payments & more" },
               ].map(vp => (
                 <div key={vp.title} style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-                  <div style={{ width:40, height:40, borderRadius:10, background:T.redLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>{vp.icon}</div>
+                  <div style={{ width:36, height:36, borderRadius:8, background:T.white, border:`1px solid ${T.grey200}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{vp.icon}</div>
                   <div>
                     <div style={{ fontSize:14, fontWeight:700, color:T.black }}>{vp.title}</div>
                     <div style={{ fontSize:13, color:T.grey400 }}>{vp.sub}</div>
@@ -1395,9 +1431,9 @@ function LandingScreen({ setPage }) {
             <div style={{ fontSize:12, color:T.grey300 }}>✓ No setup fees · ✓ KYB verified in 24h · ✓ Available in 50+ countries</div>
           </div>
 
-          {/* Browser mockup */}
-          <div style={{ background:T.white, borderRadius:16, boxShadow:"0 8px 40px rgba(0,0,0,0.12)", overflow:"hidden" }}>
-            <div style={{ background:"#F5F5F5", padding:"10px 16px", borderBottom:`1px solid ${T.grey100}`, display:"flex", alignItems:"center", gap:6 }}>
+          {/* Right — dashboard mockup */}
+          <div style={{ background:T.white, borderRadius:16, boxShadow:"0 16px 60px rgba(0,0,0,0.16)", overflow:"hidden" }}>
+            <div style={{ background:"#F0F0F0", padding:"10px 16px", borderBottom:`1px solid ${T.grey100}`, display:"flex", alignItems:"center", gap:6 }}>
               <div style={{ width:10, height:10, borderRadius:"50%", background:"#FF5F57" }} />
               <div style={{ width:10, height:10, borderRadius:"50%", background:"#FFBD2E" }} />
               <div style={{ width:10, height:10, borderRadius:"50%", background:"#28CA41" }} />
@@ -1407,44 +1443,63 @@ function LandingScreen({ setPage }) {
             </div>
             <div style={{ padding:20, background:"#F8F9FF" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                <span style={{ fontSize:13, fontWeight:700, color:T.black }}>Your Wallets</span>
-                <span style={{ fontSize:11, color:T.redPrimary, fontWeight:600 }}>+ Add Currency</span>
+                <span style={{ fontSize:14, fontWeight:700, color:T.black }}>Your Wallets</span>
+                <span style={{ fontSize:12, color:T.redPrimary, fontWeight:600 }}>+ Add Currency</span>
               </div>
-              {DUMMY_CURRENCIES.slice(0, 4).map(c => (
-                <div key={c.code} style={{ background:T.white, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"center", gap:10, border:`1px solid ${T.grey100}`, marginBottom:8 }}>
-                  <CurrencyLogo c={c} size={28} />
+              {MOCKUP_WALLETS.map(w => (
+                <div key={w.code} style={{ background:T.white, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"center", gap:10, border:`1px solid ${T.grey100}`, marginBottom:8 }}>
+                  <span style={{ fontSize:36, lineHeight:1 }}>{w.flag}</span>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:T.black }}>{c.code}</div>
-                    <div style={{ fontSize:11, color:T.grey400 }}>{c.country}</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:T.black }}>{w.code}</div>
+                    <div style={{ fontSize:12, color:T.grey400 }}>{w.country}</div>
                   </div>
-                  <div style={{ fontSize:13, fontWeight:700, color:T.black }}>{c.symbol}{c.balance}</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:T.black }}>{w.display}</div>
                 </div>
               ))}
               <div style={{ display:"flex", gap:8, marginTop:14 }}>
-                <div style={{ flex:1, background:T.redGrad, color:T.white, borderRadius:8, padding:"8px", textAlign:"center", fontSize:12, fontWeight:600 }}>Send</div>
-                <div style={{ flex:1, background:T.grey50, color:T.black, border:`1px solid ${T.grey200}`, borderRadius:8, padding:"8px", textAlign:"center", fontSize:12, fontWeight:600 }}>Receive</div>
-                <div style={{ flex:1, background:T.grey50, color:T.black, border:`1px solid ${T.grey200}`, borderRadius:8, padding:"8px", textAlign:"center", fontSize:12, fontWeight:600 }}>Convert</div>
+                <div style={{ flex:1, background:T.redGrad, color:T.white, borderRadius:8, padding:"9px", textAlign:"center", fontSize:12, fontWeight:600 }}>Send</div>
+                <div style={{ flex:1, background:T.grey50, color:T.black, border:`1px solid ${T.grey200}`, borderRadius:8, padding:"9px", textAlign:"center", fontSize:12, fontWeight:600 }}>Receive</div>
+                <div style={{ flex:1, background:T.grey50, color:T.black, border:`1px solid ${T.grey200}`, borderRadius:8, padding:"9px", textAlign:"center", fontSize:12, fontWeight:600 }}>Convert</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Features */}
-      <div style={{ background:T.white, padding:"64px 40px" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto" }}>
-          <h2 style={{ fontSize:28, fontWeight:800, color:T.black, textAlign:"center", margin:"0 0 8px" }}>Everything your business needs</h2>
-          <p style={{ fontSize:15, color:T.grey400, textAlign:"center", margin:"0 0 40px" }}>A complete global payments infrastructure built for modern businesses</p>
+      {/* Currency Strip */}
+      <div style={{ background:T.white, borderTop:`1px solid ${T.grey100}`, borderBottom:`1px solid ${T.grey100}`, padding:"40px 56px" }}>
+        <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <div style={{ fontSize:14, fontWeight:600, color:T.grey400, marginBottom:8 }}>12 dedicated currency accounts available</div>
+          <div style={{ fontSize:22, fontWeight:700, color:T.black, marginBottom:20 }}>One dedicated account per currency. No pooling. No confusion.</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
+            {LANDING_CURRENCIES.map(c => (
+              <div key={c.code} style={{ display:"flex", alignItems:"center", gap:6, background:T.grey50, border:`1px solid ${T.grey200}`, borderRadius:99, padding:"8px 16px" }}>
+                <span style={{ fontSize:16 }}>{c.flag}</span>
+                <span style={{ fontSize:13, fontWeight:700, color:T.black }}>{c.code}</span>
+                <span style={{ fontSize:12, color:T.grey400 }}>{c.name}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize:12, color:T.grey400, marginTop:16 }}>Each account comes with a dedicated IBAN, account number, SWIFT code, and local routing details.</div>
+        </div>
+      </div>
+
+      {/* Features Grid */}
+      <div style={{ background:T.grey50, padding:"64px 56px" }}>
+        <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <h2 style={{ fontSize:28, fontWeight:700, color:T.black, textAlign:"center", margin:"0 0 8px" }}>Everything your business needs</h2>
+          <p style={{ fontSize:14, color:T.grey400, textAlign:"center", margin:"0 0 40px" }}>A complete global payments infrastructure built for modern businesses</p>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
             {[
-              { icon:"🌐", title:"30+ Currencies", desc:"Hold and transact in USD, EUR, GBP, AUD, SGD, HKD, and many more currencies worldwide." },
-              { icon:"🏧", title:"Local Bank Details", desc:"Get real account numbers for each currency — send like a local business in each market." },
-              { icon:"💸", title:"Low Transfer Fees", desc:"Competitive rates with no hidden charges, no monthly fees, and full rate transparency." },
-              { icon:"🔒", title:"Bank-Grade Security", desc:"256-bit encryption, two-factor authentication, and full regulatory compliance built-in." },
-              { icon:"📊", title:"Real-Time Analytics", desc:"Track all your multicurrency cash flows in one unified dashboard with live reporting." },
+              { icon:"🏦", title:"Dedicated Local Accounts",   desc:"Get real bank account details for each currency — IBAN, routing, and SWIFT included." },
+              { icon:"⚡", title:"Instant SWIFT Payments",     desc:"Send international wires via SWIFT to 150+ countries with same-day processing." },
+              { icon:"🔄", title:"Real-Time FX Conversion",   desc:"Convert between currencies at competitive mid-market rates with live pricing." },
+              { icon:"📊", title:"Unified Dashboard",         desc:"Track all your multicurrency balances, transactions, and payments in one place." },
+              { icon:"👤", title:"Beneficiary Management",    desc:"Save recipients once and send to them again in seconds — no re-entering details." },
+              { icon:"🔒", title:"Bank-Grade Security",       desc:"256-bit encryption, two-factor auth, and full regulatory compliance built-in." },
             ].map(f => (
-              <div key={f.title} style={{ background:T.white, border:`1px solid ${T.grey100}`, borderRadius:12, padding:"24px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}>
-                <div style={{ width:44, height:44, borderRadius:12, background:T.redLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, marginBottom:14 }}>{f.icon}</div>
+              <div key={f.title} style={{ background:T.white, borderRadius:12, padding:"24px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:T.redLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, marginBottom:14 }}>{f.icon}</div>
                 <div style={{ fontSize:15, fontWeight:700, color:T.black, marginBottom:6 }}>{f.title}</div>
                 <div style={{ fontSize:13, color:T.grey400, lineHeight:1.55 }}>{f.desc}</div>
               </div>
@@ -1454,13 +1509,13 @@ function LandingScreen({ setPage }) {
       </div>
 
       {/* CTA Banner */}
-      <div style={{ background:T.redGrad, padding:"64px 40px" }}>
+      <div style={{ background:T.redGrad, padding:"64px 56px" }}>
         <div style={{ maxWidth:680, margin:"0 auto", textAlign:"center" }}>
-          <h2 style={{ fontSize:30, fontWeight:800, color:T.white, margin:"0 0 12px" }}>Ready to go global?</h2>
-          <p style={{ fontSize:16, color:"rgba(255,255,255,0.85)", margin:"0 0 28px" }}>Join thousands of businesses already using Peko for their international payments.</p>
+          <h2 style={{ fontSize:32, fontWeight:800, color:T.white, margin:"0 0 12px" }}>Open your global account today</h2>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,0.85)", margin:"0 0 28px" }}>KYB verified in 24h. No setup fees. Available in 50+ countries.</p>
           <div style={{ display:"flex", gap:12, justifyContent:"center" }}>
-            <button onClick={() => setPage("setup")} style={{ background:T.white, color:T.redPrimary, border:"none", borderRadius:8, padding:"13px 28px", fontSize:15, fontWeight:700, cursor:"pointer" }}>Get Started — Free</button>
-            <button style={{ background:"transparent", color:T.white, border:"2px solid rgba(255,255,255,0.5)", borderRadius:8, padding:"13px 24px", fontSize:15, fontWeight:600, cursor:"pointer" }}>Schedule a Demo</button>
+            <button onClick={() => setPage("setup")} style={{ background:T.white, color:T.redPrimary, border:"none", borderRadius:8, padding:"13px 28px", fontSize:15, fontWeight:700, cursor:"pointer" }}>👉 Open Global Account</button>
+            <button style={{ background:"transparent", color:T.white, border:"2px solid rgba(255,255,255,0.5)", borderRadius:8, padding:"13px 24px", fontSize:15, fontWeight:600, cursor:"pointer" }}>Request a demo</button>
           </div>
         </div>
       </div>
