@@ -46,8 +46,8 @@ const DUMMY_CURRENCIES = [
 
 const EMPTY_CURRENCIES = [
   { code:"USD", country:"United States",  balance:"0.00", pending:"0.00", flag:"🇺🇸", symbol:"$",  acct:"— Not set up —", swift:"— Not set up —", bank:"— Not set up —", status:"Activating", cardBg:"linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 60%,#C7D2FE 100%)", cardAccent:"#818CF8", cardText:"#3730A3", logoType:"stripes"   },
-  { code:"EUR", country:"European Union", balance:"0.00", pending:"0.00", flag:"🇪🇺", symbol:"€",  acct:"— Not set up —", swift:"— Not set up —", bank:"— Not set up —", status:"Activating", cardBg:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 60%,#BFDBFE 100%)", cardAccent:"#60A5FA", cardText:"#1D4ED8", logoType:"eu"        },
-  { code:"GBP", country:"United Kingdom", balance:"0.00", pending:"0.00", flag:"🇬🇧", symbol:"£",  acct:"— Not set up —", swift:"— Not set up —", bank:"— Not set up —", status:"Activating", cardBg:"linear-gradient(135deg,#FFF1F2 0%,#FFE4E6 60%,#FECDD3 100%)", cardAccent:"#FB7185", cardText:"#BE123C", logoType:"union_jack" },
+  { code:"EUR", country:"European Union", balance:"0.00", pending:"0.00", flag:"🇪🇺", symbol:"€",  acct:"— Not set up —", swift:"— Not set up —", bank:"— Not set up —", status:"Active",      cardBg:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 60%,#BFDBFE 100%)", cardAccent:"#60A5FA", cardText:"#1D4ED8", logoType:"eu"        },
+  { code:"GBP", country:"United Kingdom", balance:"0.00", pending:"0.00", flag:"🇬🇧", symbol:"£",  acct:"— Not set up —", swift:"— Not set up —", bank:"— Not set up —", status:"Closed",      cardBg:"linear-gradient(135deg,#FFF1F2 0%,#FFE4E6 60%,#FECDD3 100%)", cardAccent:"#FB7185", cardText:"#BE123C", logoType:"union_jack" },
 ];
 
 const ALL_BENEFICIARIES = {
@@ -221,6 +221,7 @@ function Pill({ label }) {
   if (label === "Active" || label === "Added") { bg = T.greenBg; color = T.greenText; border = T.greenBorder; }
   else if (label === "Activating" || label === "Pending") { bg = T.amberBg; color = T.amberText; border = T.amberBorder; }
   else if (label === "Failed" || label === "Error") { bg = T.redErrBg; color = T.redErrText; border = T.redErrBorder; }
+  else if (label === "Closed") { bg = "#F3F4F6"; color = "#6B7280"; border = "#D1D5DB"; }
   return (
     <span style={{ background: bg, color, border:`1px solid ${border}`, padding:"3px 10px", borderRadius:20, fontSize:12, fontWeight:600, display:"inline-block", lineHeight:1.5 }}>
       {label}
