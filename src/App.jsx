@@ -1375,33 +1375,15 @@ const MOCKUP_WALLETS = [
   { flag:"🇦🇺", code:"AUD", country:"Australia",      display:"A$34,910.75" },
 ];
 
-function LandingScreen({ setPage }) {
+function LandingScreen({ setPage, onNav, dummy, setDummy }) {
   return (
-    <div style={{ fontFamily:T.font, background:T.pageBg, minHeight:"100vh" }}>
-
-      {/* Navbar */}
-      <div style={{ background:T.white, borderBottom:`1px solid ${T.grey100}`, padding:"0 56px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:32, height:32, borderRadius:8, background:T.redGrad, display:"flex", alignItems:"center", justifyContent:"center", color:T.white, fontSize:16, fontWeight:800 }}>P</div>
-          <span style={{ fontSize:16, fontWeight:700, color:T.black }}>peko</span>
-        </div>
-        <div style={{ display:"flex", gap:28, alignItems:"center" }}>
-          <span style={{ fontSize:14, fontWeight:500, color:T.grey600, cursor:"pointer" }}>Products</span>
-          <span style={{ fontSize:14, fontWeight:500, color:T.grey600, cursor:"pointer" }}>Pricing</span>
-          <span style={{ fontSize:14, fontWeight:500, color:T.grey600, cursor:"pointer" }}>About</span>
-          <BtnPrimary onClick={() => setPage("setup")} style={{ fontSize:14, padding:"9px 20px" }}>Open Global Account</BtnPrimary>
-        </div>
-      </div>
+    <AppShell activePage="landing" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
 
       {/* Hero */}
       <div style={{ padding:"80px 56px" }}>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:72, alignItems:"center", maxWidth:1200, margin:"0 auto" }}>
           {/* Left */}
           <div>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:T.redLight, color:T.redPrimary, borderRadius:20, padding:"4px 14px", fontSize:12, fontWeight:600, marginBottom:20 }}>
-              <span style={{ width:6, height:6, borderRadius:"50%", background:T.redPrimary, display:"inline-block" }} />
-              Global Business Account
-            </div>
             <h1 style={{ fontSize:52, fontWeight:800, lineHeight:1.12, letterSpacing:"-1.5px", margin:"0 0 20px" }}>
               <span style={{ color:T.redPrimary }}>Dedicated Account for Every Currency.</span><br />
               <span style={{ color:T.black }}>Zero Hassle.</span>
@@ -1508,19 +1490,8 @@ function LandingScreen({ setPage }) {
         </div>
       </div>
 
-      {/* CTA Banner */}
-      <div style={{ background:T.redGrad, padding:"64px 56px" }}>
-        <div style={{ maxWidth:680, margin:"0 auto", textAlign:"center" }}>
-          <h2 style={{ fontSize:32, fontWeight:800, color:T.white, margin:"0 0 12px" }}>Open your global account today</h2>
-          <p style={{ fontSize:15, color:"rgba(255,255,255,0.85)", margin:"0 0 28px" }}>KYB verified in 24h. No setup fees. Available in 50+ countries.</p>
-          <div style={{ display:"flex", gap:12, justifyContent:"center" }}>
-            <button onClick={() => setPage("setup")} style={{ background:T.white, color:T.redPrimary, border:"none", borderRadius:8, padding:"13px 28px", fontSize:15, fontWeight:700, cursor:"pointer" }}>👉 Open Global Account</button>
-            <button style={{ background:"transparent", color:T.white, border:"2px solid rgba(255,255,255,0.5)", borderRadius:8, padding:"13px 24px", fontSize:15, fontWeight:600, cursor:"pointer" }}>Request a demo</button>
-          </div>
-        </div>
-      </div>
       <Footer />
-    </div>
+    </AppShell>
   );
 }
 
@@ -1839,7 +1810,7 @@ function RemoveModalScreen({ setPage, cur }) {
 ═══════════════════════════════════════════════════════════ */
 export default function App() {
   const [page, setPage] = useState("landing");
-  const [navOpen, setNavOpen] = useState(true);
+  const [navOpen, setNavOpen] = useState(false);
   const [dummy, setDummy] = useState(false);
   const [detailCurrency, setDetailCurrency] = useState(DUMMY_CURRENCIES[0]);
 
@@ -1852,7 +1823,7 @@ export default function App() {
 
   const renderPage = () => {
     switch (page) {
-      case "landing":        return <LandingScreen setPage={handleSetPage} />;
+      case "landing":        return <LandingScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "setup":          return <SetupScreen setPage={handleSetPage} />;
       case "initialising":   return <InitialisingScreen setPage={handleSetPage} />;
       case "currency_detail":return <CurrencyDetailScreen cur={detailCurrency} setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
