@@ -623,7 +623,9 @@ function AppShell({ activePage, onNav, setPage, dummy, setDummy, children }) {
       <Sidebar activePage={activePage} onNav={onNav} />
       <Topbar setPage={setPage} dummy={dummy} setDummy={setDummy} />
       <div style={{ marginLeft:T.sidebarW, marginTop:T.topbarH, minHeight:`calc(100vh - ${T.topbarH}px)` }}>
-        {children}
+        <div style={{ maxWidth:1100, margin:"0 auto", paddingLeft:32, paddingRight:32 }}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -1152,7 +1154,7 @@ function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy }) {
         <div style={{ display:"flex", gap:12, marginBottom:20 }}>
           <DetailCtaBtn icon="📥" label="Share Account Details" onClick={() => setShowReceive(true)} />
           <DetailCtaBtn icon="📤" label="Make a Payment"        onClick={() => openSend()} />
-          <DetailCtaBtn icon="👤" label="Add Beneficiary"       onClick={() => setShowAddBenef(true)} />
+          <DetailCtaBtn icon="🏦" label="Initiate Settlement"    onClick={() => setShowAddBenef(true)} />
         </div>
 
         {/* Bank Details */}
@@ -1163,45 +1165,42 @@ function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy }) {
           <BankDetailRow label="Bank Name"      value={dummy ? cur.bank : null} />
         </div>
 
-        {/* 55 / 45 split */}
-        <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
-          <div style={{ flex:"0 0 55%" }}>
-            <BeneficiariesTable cur={cur} beneficiaries={beneficiaries} onSend={openSend} onAddBenef={() => setShowAddBenef(true)} />
+        {/* Beneficiaries — full width */}
+        <BeneficiariesTable cur={cur} beneficiaries={beneficiaries} onSend={openSend} onAddBenef={() => setShowAddBenef(true)} />
+
+        {/* Recent Transactions — full width below beneficiaries */}
+        <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"hidden", marginTop:20, marginBottom:20 }}>
+          <div style={{ padding:"16px 20px", borderBottom:`1px solid ${T.grey100}` }}>
+            <div style={{ fontSize:15, fontWeight:700, color:T.black }}>Recent Transactions</div>
           </div>
-          <div style={{ flex:1 }}>
-            <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-              <div style={{ padding:"16px 20px", borderBottom:`1px solid ${T.grey100}` }}>
-                <div style={{ fontSize:15, fontWeight:700, color:T.black }}>Recent Transactions</div>
-              </div>
-              {transactions.length === 0 ? (
-                <div style={{ padding:"48px 20px", textAlign:"center" }}>
-                  <div style={{ fontSize:36, marginBottom:10 }}>📭</div>
-                  <div style={{ fontSize:14, fontWeight:700, color:T.black, marginBottom:6 }}>No transactions yet</div>
-                  <div style={{ fontSize:13, color:T.grey400 }}>Transactions will appear here once your account is active.</div>
-                </div>
-              ) : (
-                <table style={{ width:"100%", borderCollapse:"collapse" }}>
-                  <thead><tr>
-                    <th style={TH}>Date</th>
-                    <th style={TH}>Description</th>
-                    <th style={{ ...TH, textAlign:"right" }}>Amount</th>
-                    <th style={TH}>Status</th>
-                  </tr></thead>
-                  <tbody>
-                    {transactions.map((tx, i) => (
-                      <tr key={i} onMouseEnter={e => e.currentTarget.style.background = "#FAFAFA"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                        <td style={TD}><span style={{ color:T.grey400, fontSize:12 }}>{tx.date}</span></td>
-                        <td style={TD}>{tx.desc}</td>
-                        <td style={{ ...TD, textAlign:"right", fontWeight:600, color: tx.type === "Credit" ? T.greenText : T.redErrText }}>{tx.amount}</td>
-                        <td style={TD}><Pill label={tx.status} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+          {transactions.length === 0 ? (
+            <div style={{ padding:"48px 20px", textAlign:"center" }}>
+              <div style={{ fontSize:36, marginBottom:10 }}>📭</div>
+              <div style={{ fontSize:14, fontWeight:700, color:T.black, marginBottom:6 }}>No transactions yet</div>
+              <div style={{ fontSize:13, color:T.grey400 }}>Transactions will appear here once your account is active.</div>
             </div>
-          </div>
+          ) : (
+            <table style={{ width:"100%", borderCollapse:"collapse" }}>
+              <thead><tr>
+                <th style={TH}>Date</th>
+                <th style={TH}>Description</th>
+                <th style={{ ...TH, textAlign:"right" }}>Amount</th>
+                <th style={TH}>Status</th>
+              </tr></thead>
+              <tbody>
+                {transactions.map((tx, i) => (
+                  <tr key={i} onMouseEnter={e => e.currentTarget.style.background = "#FAFAFA"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <td style={TD}><span style={{ color:T.grey400, fontSize:12 }}>{tx.date}</span></td>
+                    <td style={TD}>{tx.desc}</td>
+                    <td style={{ ...TD, textAlign:"right", fontWeight:600, color: tx.type === "Credit" ? T.greenText : T.redErrText }}>{tx.amount}</td>
+                    <td style={TD}><Pill label={tx.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
+
         {/* Danger Zone */}
         <div style={{ marginTop:32, border:`1px solid ${T.redErrBorder}`, borderRadius:12, padding:"20px 24px", background:T.redErrBg, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div>
@@ -1238,8 +1237,8 @@ function CurrencyCard({ c, onClick, dummy }) {
           <div style={{ fontSize:11, color:T.grey400 }}>{c.country}</div>
         </div>
       </div>
-      <div style={{ fontSize:17, fontWeight:700, color: dummy ? T.black : T.grey300, marginBottom:8 }}>
-        {dummy ? `${c.symbol}${c.balance}` : "—"}
+      <div style={{ fontSize:17, fontWeight:700, color: dummy ? T.black : T.grey400, marginBottom:8 }}>
+        {`${c.symbol}${c.balance}`}
       </div>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <Pill label={c.status} />
@@ -1252,12 +1251,17 @@ function CurrencyCard({ c, onClick, dummy }) {
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD APP SCREEN
 ═══════════════════════════════════════════════════════════ */
+const INR_RATES = { USD: 84.0, EUR: 90.5, GBP: 106.5, AUD: 55.0, SGD: 62.5, HKD: 10.8 };
+
 function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy }) {
   const currencies = dummy ? DUMMY_CURRENCIES : EMPTY_CURRENCIES;
   const transactions = dummy ? ALL_TRANSACTIONS : [];
   const activeCurrencies = currencies.filter(c => c.status === "Active");
-  const activatingCurrencies = currencies.filter(c => c.status === "Activating");
   const curMap = DUMMY_CURRENCIES.reduce((acc, c) => ({ ...acc, [c.code]: c }), {});
+  const totalINR = dummy
+    ? DUMMY_CURRENCIES.reduce((sum, c) => sum + parseFloat(c.balance.replace(/,/g, "")) * (INR_RATES[c.code] || 1), 0)
+    : 0;
+  const fmtINR = "₹" + new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalINR);
 
   const handleCurrencyClick = (c) => { setDetailCurrency(c); setPage("currency_detail"); };
 
@@ -1265,73 +1269,63 @@ function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy
     <AppShell activePage="dashboard_app" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
       <div style={{ padding:"24px 28px", minHeight:"calc(100vh - 56px)", background:T.pageBg }}>
         <Breadcrumb items={[{ label:"Home" }, { label:"Multicurrency Accounts" }]} />
-        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
-          <div>
-            <h1 style={{ fontSize:24, fontWeight:700, color:T.black, margin:"0 0 4px" }}>Multicurrency Accounts</h1>
-            <p style={{ fontSize:14, color:T.grey600, margin:0 }}>Manage your global currency wallets and payments</p>
-          </div>
-          <div style={{ display:"flex", gap:10 }}>
-            <BtnSecondary style={{ fontSize:13, padding:"9px 16px" }}>+ Add Beneficiary</BtnSecondary>
-            <BtnPrimary onClick={() => setPage("add_modal")} style={{ fontSize:13, padding:"9px 16px" }}>+ Add Currency</BtnPrimary>
-          </div>
+        <div style={{ marginBottom:24 }}>
+          <h1 style={{ fontSize:24, fontWeight:700, color:T.black, margin:"0 0 4px" }}>Multicurrency Accounts</h1>
+          <p style={{ fontSize:14, color:T.grey600, margin:0 }}>Manage your global currency wallets and payments</p>
         </div>
 
         {/* Stat cards */}
         <div style={{ display:"flex", gap:16, marginBottom:24 }}>
           {[
-            { icon:"🌐", value:currencies.length, label:"Total Currencies",  bg:T.white,    color:T.black },
-            { icon:"✅", value:activeCurrencies.length, label:"Active Wallets", bg:T.greenBg, color:T.greenText },
-            { icon:"⏳", value:activatingCurrencies.length, label:"Activating",  bg:T.amberBg, color:T.amberText },
+            { value:fmtINR,                    label:"Total Balance in Home Currency", bg:T.white,    color:T.black,     valueSize:22 },
+            { value:activeCurrencies.length,   label:"Active Wallets",                bg:T.greenBg,  color:T.greenText, valueSize:28 },
           ].map(stat => (
             <div key={stat.label} style={{ flex:1, background:stat.bg, borderRadius:12, padding:"20px", boxShadow:"0 1px 4px rgba(0,0,0,0.06)", border:`1px solid ${stat.bg === T.white ? T.grey100 : "transparent"}` }}>
-              <div style={{ fontSize:24, marginBottom:8 }}>{stat.icon}</div>
-              <div style={{ fontSize:28, fontWeight:700, color:stat.color, marginBottom:2 }}>{stat.value}</div>
+              <div style={{ fontSize:stat.valueSize, fontWeight:700, color:stat.color, marginBottom:4 }}>{stat.value}</div>
               <div style={{ fontSize:12, color:stat.color, opacity:0.8 }}>{stat.label}</div>
             </div>
           ))}
         </div>
 
-        {/* 65/35 split */}
-        <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
-          <div style={{ flex:"0 0 65%" }}>
-            <div style={{ fontSize:16, fontWeight:700, color:T.black, marginBottom:14 }}>Currency Wallets</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
-              {currencies.map(c => <CurrencyCard key={c.code} c={c} onClick={() => handleCurrencyClick(c)} dummy={dummy} />)}
-              <AddCurrencyCard onClick={() => setPage("add_modal")} />
-            </div>
+        {/* Currency Wallets — full width */}
+        <div style={{ marginBottom:28 }}>
+          <div style={{ fontSize:16, fontWeight:700, color:T.black, marginBottom:14 }}>Currency Wallets</div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+            {currencies.map(c => <CurrencyCard key={c.code} c={c} onClick={() => handleCurrencyClick(c)} dummy={dummy} />)}
+            <AddCurrencyCard onClick={() => setPage("add_modal")} />
           </div>
-          <div style={{ flex:1 }}>
-            <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-              <div style={{ padding:"16px 20px", borderBottom:`1px solid ${T.grey100}` }}>
-                <div style={{ fontSize:15, fontWeight:700, color:T.black }}>Recent Activity</div>
-              </div>
-              {transactions.length === 0 ? (
-                <div style={{ padding:"40px 20px", textAlign:"center" }}>
-                  <div style={{ fontSize:36, marginBottom:10 }}>📭</div>
-                  <div style={{ fontSize:14, fontWeight:700, color:T.black, marginBottom:6 }}>No activity yet</div>
-                  <div style={{ fontSize:12, color:T.grey400 }}>Recent transactions across all currencies will appear here.</div>
-                </div>
-              ) : (
-                <div>
-                  {transactions.map((tx, i) => {
-                    const mc = curMap[tx.code] || DUMMY_CURRENCIES[0];
-                    const isCredit = tx.amount.startsWith("+");
-                    return (
-                      <div key={i} style={{ padding:"12px 20px", borderBottom:`1px solid #F5F5F5`, display:"flex", alignItems:"center", gap:10 }}>
-                        <CurrencyLogo c={mc} size={26} />
-                        <div style={{ flex:1 }}>
-                          <div style={{ fontSize:13, fontWeight:600, color:T.black }}>{tx.desc}</div>
-                          <div style={{ fontSize:11, color:T.grey400 }}>{tx.date} · {tx.code}</div>
-                        </div>
-                        <div style={{ fontSize:13, fontWeight:600, color: isCredit ? T.greenText : T.redErrText }}>{tx.amount}</div>
-                      </div>
-                    );
-                  })}
-                  <div style={{ padding:"12px 20px", textAlign:"center", fontSize:13, color:T.redPrimary, cursor:"pointer", fontWeight:600 }}>View all transactions →</div>
-                </div>
-              )}
-            </div>
+        </div>
+
+        {/* Recent Activity — full width below */}
+        <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+          <div style={{ padding:"16px 20px", borderBottom:`1px solid ${T.grey100}` }}>
+            <div style={{ fontSize:15, fontWeight:700, color:T.black }}>Recent Activity</div>
           </div>
+          {transactions.length === 0 ? (
+            <div style={{ padding:"40px 20px", textAlign:"center" }}>
+              <div style={{ fontSize:36, marginBottom:10 }}>📭</div>
+              <div style={{ fontSize:14, fontWeight:700, color:T.black, marginBottom:6 }}>No activity yet</div>
+              <div style={{ fontSize:12, color:T.grey400 }}>Recent transactions across all currencies will appear here.</div>
+            </div>
+          ) : (
+            <div>
+              {transactions.map((tx, i) => {
+                const mc = curMap[tx.code] || DUMMY_CURRENCIES[0];
+                const isCredit = tx.amount.startsWith("+");
+                return (
+                  <div key={i} style={{ padding:"12px 20px", borderBottom:`1px solid #F5F5F5`, display:"flex", alignItems:"center", gap:10 }}>
+                    <CurrencyLogo c={mc} size={26} />
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:T.black }}>{tx.desc}</div>
+                      <div style={{ fontSize:11, color:T.grey400 }}>{tx.date} · {tx.code}</div>
+                    </div>
+                    <div style={{ fontSize:13, fontWeight:600, color: isCredit ? T.greenText : T.redErrText }}>{tx.amount}</div>
+                  </div>
+                );
+              })}
+              <div style={{ padding:"12px 20px", textAlign:"center", fontSize:13, color:T.redPrimary, cursor:"pointer", fontWeight:600 }}>View all transactions →</div>
+            </div>
+          )}
         </div>
         <div style={{ marginTop:40 }}><Footer /></div>
       </div>
@@ -1512,49 +1506,55 @@ const SETUP_CURRENCY_ROWS = [
   { group:"other",   code:"SGD", country:"Singapore",      flag:"🇸🇬" },
 ];
 
-function SetupScreen({ setPage }) {
+function SetupScreen({ setPage, onNav, dummy, setDummy }) {
   const [step, setStep] = useState(1);
   const [bizName, setBizName] = useState("Sigma Dt3 Logistics");
   const [bizType, setBizType] = useState("Limited Company");
   const [bizEmail, setBizEmail] = useState("finance@sigmadt3.com");
   const [phone, setPhone] = useState("+971 50 123 4567");
   const [selected, setSelected] = useState(new Set(["USD","GBP","EUR"]));
+  const [msaStatus, setMsaStatus] = useState("pending"); // pending | signing | signed | error
 
   const toggleCurrency = code => setSelected(prev => { const n = new Set(prev); n.has(code) ? n.delete(code) : n.add(code); return n; });
   const popular = SETUP_CURRENCY_ROWS.filter(r => r.group === "popular");
-  const others = SETUP_CURRENCY_ROWS.filter(r => r.group === "other");
+  const others  = SETUP_CURRENCY_ROWS.filter(r => r.group === "other");
+
+  const STEP_LABELS = ["Business Info", "Currencies", "Sign MSA"];
 
   const SetupStepper = () => (
     <div style={{ display:"flex", alignItems:"center" }}>
-      {[1, 2].map((s, i) => {
+      {[1, 2, 3].map((s, i) => {
         const done = step > s, active = step === s;
         return (
           <div key={s} style={{ display:"flex", alignItems:"center" }}>
             <div style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
               <div style={{ width:28, height:28, borderRadius:"50%", background: done ? T.greenText : active ? T.redPrimary : T.grey200, color:T.white, fontSize:13, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center" }}>{done ? "✓" : s}</div>
-              <span style={{ fontSize:11, color: active ? T.redPrimary : done ? T.greenText : T.grey400, marginTop:3 }}>{["Business Info","Currencies"][i]}</span>
+              <span style={{ fontSize:11, color: active ? T.redPrimary : done ? T.greenText : T.grey400, marginTop:3 }}>{STEP_LABELS[i]}</span>
             </div>
-            {i < 1 && <div style={{ height:2, width:60, background: step > 1 ? T.greenText : T.grey200, margin:"0 8px", marginBottom:18 }} />}
+            {i < 2 && <div style={{ height:2, width:60, background: step > s ? T.greenText : T.grey200, margin:"0 8px", marginBottom:18 }} />}
           </div>
         );
       })}
     </div>
   );
 
+  const handleESign = () => {
+    setMsaStatus("signing");
+    // Simulate eSign provider flow (replace setTimeout with DocuSign/Digio/SignDesk SDK call)
+    setTimeout(() => setMsaStatus("signed"), 2200);
+  };
+
   return (
-    <div style={{ fontFamily:T.font, background:T.pageBg, minHeight:"100vh" }}>
-      <div style={{ background:T.white, borderBottom:`1px solid ${T.grey100}`, padding:"0 40px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:32, height:32, borderRadius:8, background:T.redGrad, display:"flex", alignItems:"center", justifyContent:"center", color:T.white, fontSize:16, fontWeight:800 }}>P</div>
-          <span style={{ fontSize:16, fontWeight:700, color:T.black }}>peko</span>
-        </div>
-        <SetupStepper />
-        <BtnSecondary onClick={() => setPage("landing")} style={{ fontSize:13, padding:"8px 16px" }}>Exit</BtnSecondary>
-      </div>
+    <AppShell activePage="setup" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
       <div style={{ maxWidth:560, margin:"0 auto", padding:"48px 24px" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32 }}>
+          <SetupStepper />
+          <BtnSecondary onClick={() => setPage("landing")} style={{ fontSize:13, padding:"8px 16px" }}>Exit</BtnSecondary>
+        </div>
+
         {step === 1 ? (
           <div>
-            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 1 of 2</div>
+            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 1 of 3</div>
             <h2 style={{ fontSize:24, fontWeight:800, color:T.black, margin:"0 0 6px" }}>Business Information Verification</h2>
             <p style={{ fontSize:14, color:T.grey400, margin:"0 0 28px" }}>Please review and confirm your business details below.</p>
             <div style={{ background:T.white, borderRadius:12, padding:24, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", display:"flex", flexDirection:"column", gap:16 }}>
@@ -1565,9 +1565,10 @@ function SetupScreen({ setPage }) {
               <BtnPrimary onClick={() => setStep(2)} style={{ width:"100%", padding:"13px" }}>Proceed →</BtnPrimary>
             </div>
           </div>
-        ) : (
+
+        ) : step === 2 ? (
           <div>
-            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 2 of 2</div>
+            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 2 of 3</div>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
               <h2 style={{ fontSize:24, fontWeight:800, color:T.black, margin:0 }}>Select Currency Accounts</h2>
               <div style={{ display:"flex", gap:8, alignItems:"center" }}>
@@ -1599,12 +1600,76 @@ function SetupScreen({ setPage }) {
             )}
             <div style={{ display:"flex", gap:10 }}>
               <BtnSecondary onClick={() => setStep(1)} style={{ flex:1, padding:"12px" }}>← Back</BtnSecondary>
-              <BtnPrimary onClick={() => setPage("initialising")} style={{ flex:1, padding:"12px" }}>Submit Request →</BtnPrimary>
+              <BtnPrimary onClick={() => setStep(3)} style={{ flex:1, padding:"12px" }}>Next →</BtnPrimary>
+            </div>
+          </div>
+
+        ) : (
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 3 of 3</div>
+            <h2 style={{ fontSize:24, fontWeight:800, color:T.black, margin:"0 0 6px" }}>Sign Master Services Agreement</h2>
+            <p style={{ fontSize:14, color:T.grey400, margin:"0 0 24px" }}>Please review and eSign the MSA before proceeding.</p>
+
+            {/* Document preview card */}
+            <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", marginBottom:16, overflow:"hidden" }}>
+              <div style={{ padding:"20px" }}>
+                <div style={{ display:"flex", alignItems:"flex-start", gap:14, marginBottom:20 }}>
+                  <div style={{ width:44, height:52, borderRadius:6, background:"#FEE2E2", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:22 }}>📄</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:T.black, marginBottom:3 }}>Decfin_IFSC_MSA_Template.pdf</div>
+                    <div style={{ fontSize:12, color:T.grey400 }}>Master Services Agreement · 20 pages</div>
+                  </div>
+                  {msaStatus === "signed"  && <span style={{ background:T.greenBg,   color:T.greenText,   border:`1px solid ${T.greenBorder}`,   borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>✓ Signed</span>}
+                  {msaStatus === "pending" && <span style={{ background:T.amberBg,   color:T.amberText,   border:`1px solid ${T.amberBorder}`,   borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Awaiting signature</span>}
+                  {msaStatus === "signing" && <span style={{ background:T.amberBg,   color:T.amberText,   border:`1px solid ${T.amberBorder}`,   borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Signing…</span>}
+                  {msaStatus === "error"   && <span style={{ background:T.redErrBg,  color:T.redErrText,  border:`1px solid ${T.redErrBorder}`,  borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Failed</span>}
+                </div>
+                <div style={{ borderTop:`1px solid ${T.grey100}`, paddingTop:16, display:"flex", flexDirection:"column", gap:12 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:12, color:T.grey400, fontWeight:500 }}>Signer (Customer)</span>
+                    <span style={{ fontSize:12, color:T.black, fontWeight:600 }}>{bizName}</span>
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
+                    <span style={{ fontSize:12, color:T.grey400, fontWeight:500, flexShrink:0 }}>Counterparty</span>
+                    <span style={{ fontSize:12, color:T.black, fontWeight:600, textAlign:"right" }}>DecFin Fintech Services IFSC Private Limited</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {msaStatus === "error" && (
+              <div style={{ background:T.redErrBg, border:`1px solid ${T.redErrBorder}`, borderRadius:10, padding:"12px 16px", marginBottom:16, fontSize:13, color:T.redErrText, fontWeight:500 }}>
+                eSign failed or timed out. Please try again.
+              </div>
+            )}
+
+            <div style={{ display:"flex", gap:10, marginBottom:12 }}>
+              {msaStatus === "signed" ? (
+                <div style={{ flex:1, background:T.greenBg, border:`1px solid ${T.greenBorder}`, borderRadius:8, padding:"13px", textAlign:"center", fontSize:14, fontWeight:700, color:T.greenText }}>✓ Document Signed</div>
+              ) : (
+                <BtnPrimary
+                  onClick={msaStatus !== "signing" ? handleESign : undefined}
+                  style={{ flex:1, padding:"13px", opacity: msaStatus === "signing" ? 0.7 : 1, cursor: msaStatus === "signing" ? "wait" : "pointer" }}
+                >
+                  {msaStatus === "signing" ? "Opening eSign…" : msaStatus === "error" ? "Try Again" : "Review & eSign"}
+                </BtnPrimary>
+              )}
+              <BtnSecondary style={{ padding:"13px 18px", flexShrink:0 }}>⬇ Download PDF</BtnSecondary>
+            </div>
+
+            <div style={{ display:"flex", gap:10 }}>
+              <BtnSecondary onClick={() => setStep(2)} style={{ flex:1, padding:"12px" }}>← Back</BtnSecondary>
+              <BtnPrimary
+                onClick={() => { if (msaStatus === "signed") setPage("initialising"); }}
+                style={{ flex:1, padding:"12px", opacity: msaStatus === "signed" ? 1 : 0.4, cursor: msaStatus === "signed" ? "pointer" : "not-allowed" }}
+              >
+                Submit Request →
+              </BtnPrimary>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }
 
@@ -1627,7 +1692,7 @@ function SetupCurrencyRow({ row, selected, onToggle }) {
 /* ═══════════════════════════════════════════════════════════
    INITIALISING SCREEN
 ═══════════════════════════════════════════════════════════ */
-function InitialisingScreen({ setPage }) {
+function InitialisingScreen({ setPage, onNav, dummy, setDummy }) {
   const [dots, setDots] = useState(".");
   useEffect(() => {
     const t = setInterval(() => setDots(d => d.length >= 3 ? "." : d + "."), 500);
@@ -1642,7 +1707,8 @@ function InitialisingScreen({ setPage }) {
   ];
 
   return (
-    <div style={{ fontFamily:T.font, background:T.pageBg, minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"40px 24px" }}>
+    <AppShell activePage="initialising" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"40px 24px", minHeight:`calc(100vh - ${T.topbarH}px)` }}>
       <div style={{ maxWidth:480, width:"100%", textAlign:"center" }}>
         <div style={{ width:72, height:72, borderRadius:16, background:T.redGrad, display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, margin:"0 auto 24px" }}>🌍</div>
         <h1 style={{ fontSize:26, fontWeight:800, color:T.black, margin:"0 0 10px" }}>We're getting things ready!</h1>
@@ -1667,8 +1733,8 @@ function InitialisingScreen({ setPage }) {
         <BtnPrimary onClick={() => setPage("dashboard_app")} style={{ width:"100%", padding:"14px", fontSize:15 }}>Take me to my Dashboard →</BtnPrimary>
         <div style={{ fontSize:11, color:T.grey300, marginTop:12 }}>You can close this page — we'll email you when everything is ready.</div>
       </div>
-      <div style={{ position:"fixed", bottom:0, left:0, right:0 }}><Footer /></div>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -1824,8 +1890,8 @@ export default function App() {
   const renderPage = () => {
     switch (page) {
       case "landing":        return <LandingScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
-      case "setup":          return <SetupScreen setPage={handleSetPage} />;
-      case "initialising":   return <InitialisingScreen setPage={handleSetPage} />;
+      case "setup":          return <SetupScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
+      case "initialising":   return <InitialisingScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "currency_detail":return <CurrencyDetailScreen cur={detailCurrency} setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "currencies":     return <CurrenciesScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "add_modal":      return <AddModalScreen setPage={handleSetPage} />;
