@@ -1139,13 +1139,155 @@ function BankDetailRow({ label, value }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   INITIATE SETTLEMENT MODAL
+═══════════════════════════════════════════════════════════ */
+const SETTLEMENT_RATES = { USD:84.0, EUR:90.5, GBP:106.5, AUD:55.0, SGD:62.5, HKD:10.8 };
+
+function InitiateSettlementModal({ cur, settlementAccount, onClose, onAddSettlementAccount, onSuccess }) {
+  const [amount, setAmount] = useState("");
+  const [step,   setStep]   = useState("form"); // "form" | "confirm"
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true));
+    const onKey = e => { if (e.key === "Escape") handleClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => { cancelAnimationFrame(id); document.removeEventListener("keydown", onKey); };
+  }, []);
+
+  const handleClose = () => { setVisible(false); setTimeout(onClose, 250); };
+
+  const rate             = SETTLEMENT_RATES[cur.code] || 1;
+  const parsedAmount     = parseFloat(amount) || 0;
+  const availableBalance = parseFloat((cur.balance || "0").replace(/,/g, ""));
+  const inrEquiv         = parsedAmount * rate;
+  const fmtINR           = parsedAmount > 0
+    ? "≈ ₹" + new Intl.NumberFormat("en-IN", { minimumFractionDigits:2, maximumFractionDigits:2 }).format(inrEquiv)
+    : "—";
+  const amountExceeds = parsedAmount > 0 && parsedAmount > availableBalance;
+  const isValid = parsedAmount > 0 && !amountExceeds && !!settlementAccount;
+
+  const handleConfirm = () => {
+    onSuccess("Settlement initiated successfully. Funds will arrive in 1–3 business days.");
+    handleClose();
+  };
+
+  return (
+    <>
+      <div onClick={handleClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:600, opacity: visible ? 1 : 0, transition:"opacity 0.25s" }} />
+      <div style={{ position:"fixed", top:"50%", left:"50%", transform: visible ? "translate(-50%,-50%) scale(1)" : "translate(-50%,-48%) scale(0.97)", opacity: visible ? 1 : 0, transition:"all 0.25s ease-out", width:480, maxWidth:"94vw", background:T.white, borderRadius:16, boxShadow:"0 16px 60px rgba(0,0,0,0.22)", zIndex:601, display:"flex", flexDirection:"column", maxHeight:"90vh" }}>
+
+        {/* Header */}
+        <div style={{ padding:"20px 24px", borderBottom:`1px solid ${T.grey100}`, flexShrink:0 }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+            <div>
+              <div style={{ fontSize:17, fontWeight:700, color:T.black }}>Initiate Settlement</div>
+              <div style={{ fontSize:13, color:T.grey400, marginTop:3 }}>Transfer your balance to your linked settlement account</div>
+            </div>
+            <button onClick={handleClose} style={{ border:"none", background:"none", cursor:"pointer", fontSize:22, color:T.grey400, lineHeight:1, padding:0, marginLeft:16 }}>×</button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ flex:1, overflowY:"auto", padding:"20px 24px", display:"flex", flexDirection:"column", gap:20 }}>
+          {step === "form" ? (
+            <>
+              {/* Amount */}
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:T.grey600, display:"block", marginBottom:6 }}>Settlement Amount *</label>
+                <div style={{ display:"flex", alignItems:"center", border:`1.5px solid ${amountExceeds ? T.redErrBorder : T.grey200}`, borderRadius:8, overflow:"hidden" }}>
+                  <span style={{ padding:"10px 14px", fontSize:16, fontWeight:700, color:T.grey400, borderRight:`1px solid ${T.grey100}`, background:"#FAFAFA", flexShrink:0 }}>{cur.symbol}</span>
+                  <input type="number" min="0" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00"
+                    style={{ flex:1, padding:"10px 12px", fontSize:16, border:"none", outline:"none", fontFamily:T.font, color:T.black }} />
+                </div>
+                {amountExceeds && <div style={{ fontSize:12, color:T.redErrText, marginTop:4 }}>Amount exceeds available balance</div>}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:6 }}>
+                  <span style={{ fontSize:12, color:T.grey400 }}>Available balance: {cur.symbol}{cur.balance}</span>
+                  <span onClick={() => setAmount(String(availableBalance))} style={{ fontSize:12, color:T.redPrimary, fontWeight:600, cursor:"pointer" }}>Settle full balance →</span>
+                </div>
+              </div>
+
+              {/* Settling To */}
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:T.grey600, display:"block", marginBottom:6 }}>Settling To</label>
+                {settlementAccount ? (
+                  <div style={{ background:"#FAFAFA", border:`1px solid ${T.grey100}`, borderRadius:10, padding:"14px 16px", display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width:36, height:36, borderRadius:8, background:T.grey100, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>🏦</div>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700, color:T.black }}>{settlementAccount.bankName}</div>
+                      <div style={{ fontSize:12, color:T.grey400 }}>••••{settlementAccount.accountNumber.slice(-4)} · {settlementAccount.holderName}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ background:T.amberBg, border:`1px solid ${T.amberBorder}`, borderRadius:10, padding:"14px 16px" }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:T.amberText, marginBottom:4 }}>No settlement account linked</div>
+                    <div style={{ fontSize:12, color:T.amberText, opacity:0.9, marginBottom:8 }}>Please add one first before initiating a settlement.</div>
+                    <span onClick={() => { handleClose(); onAddSettlementAccount(); }} style={{ fontSize:13, color:T.redPrimary, fontWeight:600, cursor:"pointer" }}>Add Settlement Account →</span>
+                  </div>
+                )}
+              </div>
+
+              {/* INR Conversion */}
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:T.grey600, display:"block", marginBottom:6 }}>Amount in Home Currency (INR)</label>
+                <div style={{ background:"#FAFAFA", border:`1px solid ${T.grey100}`, borderRadius:8, padding:"12px 16px" }}>
+                  <div style={{ fontSize:18, fontWeight:700, color: parsedAmount > 0 ? T.black : T.grey300 }}>{fmtINR}</div>
+                  <div style={{ fontSize:12, color:T.grey400, marginTop:4 }}>Exchange rate: 1 {cur.code} = ₹{rate.toFixed(2)}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Confirmation step */
+            <div>
+              <div style={{ fontSize:15, fontWeight:700, color:T.black, marginBottom:16 }}>Please confirm your settlement:</div>
+              <div style={{ background:"#FAFAFA", border:`1px solid ${T.grey100}`, borderRadius:12, padding:"16px 18px", display:"flex", flexDirection:"column", gap:12 }}>
+                {[
+                  ["Amount",     `${cur.symbol}${parseFloat(amount).toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 })}`],
+                  ["To",         settlementAccount ? `${settlementAccount.bankName} ••••${settlementAccount.accountNumber.slice(-4)}` : "—"],
+                  ["Equivalent", fmtINR],
+                ].map(([lbl, val]) => (
+                  <div key={lbl} style={{ display:"flex", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:13, color:T.grey400 }}>{lbl}</span>
+                    <span style={{ fontSize:13, fontWeight:600, color:T.black }}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ flexShrink:0, padding:"16px 24px", borderTop:`1px solid ${T.grey100}`, display:"flex", gap:10 }}>
+          {step === "form" ? (
+            <>
+              <BtnSecondary onClick={handleClose} style={{ flex:1 }}>Cancel</BtnSecondary>
+              <BtnPrimary onClick={() => setStep("confirm")} disabled={!isValid} style={{ flex:1 }}>Initiate Settlement</BtnPrimary>
+            </>
+          ) : (
+            <>
+              <BtnSecondary onClick={() => setStep("form")} style={{ flex:1 }}>← Go Back</BtnSecondary>
+              <BtnPrimary onClick={handleConfirm} style={{ flex:1 }}>Confirm & Settle</BtnPrimary>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    CURRENCY DETAIL SCREEN   ← defined BEFORE DashboardAppScreen
 ═══════════════════════════════════════════════════════════ */
-function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy }) {
-  const [showReceive, setShowReceive] = useState(false);
-  const [showSend, setShowSend] = useState(false);
-  const [showAddBenef, setShowAddBenef] = useState(false);
-  const [sendBenef, setSendBenef] = useState(null);
+function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy, settlementAccount, setSettlementAccount }) {
+  const [showReceive,          setShowReceive]          = useState(false);
+  const [showSend,             setShowSend]             = useState(false);
+  const [showAddBenef,         setShowAddBenef]         = useState(false);
+  const [sendBenef,            setSendBenef]            = useState(null);
+  const [showSettlement,       setShowSettlement]       = useState(false);
+  const [showSettlementPanel,  setShowSettlementPanel]  = useState(false);
+  const [detailToast,          setDetailToast]          = useState(null);
+
+  const showDetailToast = msg => { setDetailToast(msg); setTimeout(() => setDetailToast(null), 3500); };
   const [beneficiaries, setBeneficiaries] = useState(() =>
     dummy ? (ALL_BENEFICIARIES[cur.code] || []) : []
   );
@@ -1191,7 +1333,7 @@ function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy }) {
         <div style={{ display:"flex", gap:12, marginBottom:20 }}>
           <DetailCtaBtn icon="📥" label="Share Account Details" onClick={() => setShowReceive(true)} />
           <DetailCtaBtn icon="📤" label="Make a Payment"        onClick={() => openSend()} />
-          <DetailCtaBtn icon="🏦" label="Initiate Settlement"    onClick={() => setShowAddBenef(true)} />
+          <DetailCtaBtn icon="🏦" label="Initiate Settlement"    onClick={() => setShowSettlement(true)} />
         </div>
 
         {/* Bank Details */}
@@ -1255,6 +1397,26 @@ function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy }) {
       {showReceive && <ReceiveModal cur={cur} onClose={() => setShowReceive(false)} />}
       {showSend && <SendPanel cur={cur} beneficiaries={beneficiaries} initialBenef={sendBenef} onClose={() => { setShowSend(false); setSendBenef(null); }} />}
       {showAddBenef && <AddBeneficiaryPanel cur={cur} onClose={() => setShowAddBenef(false)} onAdd={b => setBeneficiaries(prev => [...prev, b])} />}
+      {showSettlement && (
+        <InitiateSettlementModal
+          cur={cur}
+          settlementAccount={settlementAccount}
+          onClose={() => setShowSettlement(false)}
+          onAddSettlementAccount={() => setShowSettlementPanel(true)}
+          onSuccess={msg => showDetailToast(msg)}
+        />
+      )}
+      {showSettlementPanel && (
+        <SettlementPanel
+          account={settlementAccount}
+          onClose={() => setShowSettlementPanel(false)}
+          onSave={acc => { setSettlementAccount(acc); showDetailToast("Settlement account added successfully"); }}
+          onRemove={() => { setSettlementAccount(null); showDetailToast("Settlement account removed"); }}
+        />
+      )}
+      {detailToast && (
+        <div style={{ position:"fixed", bottom:28, left:"50%", transform:"translateX(-50%)", background:"#1F2937", color:"#FFF", padding:"12px 28px", borderRadius:10, fontSize:13, fontWeight:600, zIndex:700, boxShadow:"0 4px 20px rgba(0,0,0,0.25)", whiteSpace:"nowrap", pointerEvents:"none" }}>✓ {detailToast}</div>
+      )}
     </AppShell>
   );
 }
@@ -1297,6 +1459,9 @@ function SettlementPanel({ account, onClose, onSave, onRemove }) {
   const [bankCountry,     setBankCountry]     = useState(account?.bankCountry     || "");
   const [accountCurrency, setAccountCurrency] = useState(account?.accountCurrency || "");
   const [accountType,     setAccountType]     = useState(account?.accountType     || "Current");
+  const [autoSettle,      setAutoSettle]      = useState(account?.autoSettle      || false);
+  const [timezone,        setTimezone]        = useState(account?.timezone        || (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Dubai"; } catch { return "Asia/Dubai"; } })());
+  const [showTriggerConfirm, setShowTriggerConfirm] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [visible,         setVisible]         = useState(false);
 
@@ -1315,7 +1480,7 @@ function SettlementPanel({ account, onClose, onSave, onRemove }) {
 
   const handleSave = () => {
     if (!isValid) return;
-    onSave({ holderName, bankName, accountNumber, ifscSwift, bankCountry, accountCurrency, accountType });
+    onSave({ holderName, bankName, accountNumber, ifscSwift, bankCountry, accountCurrency, accountType, autoSettle, timezone });
     handleClose();
   };
 
@@ -1377,6 +1542,55 @@ function SettlementPanel({ account, onClose, onSave, onRemove }) {
             </div>
           </div>
 
+          {/* Auto Settlement */}
+          <div style={{ paddingTop:16, borderTop:`1px solid ${T.grey100}` }}>
+            <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer" }}>
+              <input type="checkbox" checked={autoSettle} onChange={e => { setAutoSettle(e.target.checked); setShowTriggerConfirm(false); }}
+                style={{ marginTop:2, width:16, height:16, accentColor:T.redPrimary, cursor:"pointer", flexShrink:0 }} />
+              <div>
+                <div style={{ fontSize:13, fontWeight:600, color:T.black }}>Activate Auto Settlement</div>
+                <div style={{ fontSize:12, color:T.grey400, marginTop:3, lineHeight:1.5 }}>Automatically settles your balance daily at 11:59 PM. Can also be manually triggered at any time.</div>
+              </div>
+            </label>
+
+            {autoSettle && (
+              <div style={{ marginTop:12, background:T.grey50, borderRadius:10, padding:"14px 16px", display:"flex", flexDirection:"column", gap:12 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontSize:12, color:T.grey400, fontWeight:500 }}>Schedule</span>
+                  <span style={{ fontSize:13, fontWeight:600, color:T.black }}>Daily at 11:59 PM</span>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:12 }}>
+                  <span style={{ fontSize:12, color:T.grey400, fontWeight:500, flexShrink:0 }}>Timezone</span>
+                  <select value={timezone} onChange={e => setTimezone(e.target.value)}
+                    style={{ fontSize:12, color:T.black, border:`1px solid ${T.grey200}`, borderRadius:6, padding:"5px 8px", fontFamily:T.font, background:T.white, outline:"none", maxWidth:200 }}>
+                    {["Asia/Dubai","Asia/Kolkata","Asia/Singapore","Asia/Colombo","Asia/Karachi","Asia/Hong_Kong","Asia/Shanghai","Asia/Tokyo","Europe/London","Europe/Paris","Europe/Berlin","America/New_York","America/Chicago","America/Los_Angeles","Australia/Sydney"].map(tz =>
+                      <option key={tz} value={tz}>{tz.replace("_"," ")}</option>
+                    )}
+                  </select>
+                </div>
+                <div style={{ borderTop:`1px solid ${T.grey200}`, paddingTop:12 }}>
+                  {!showTriggerConfirm ? (
+                    <button onClick={() => setShowTriggerConfirm(true)}
+                      style={{ fontSize:12, fontWeight:600, color:T.redPrimary, background:"transparent", border:`1.5px solid ${T.redPrimary}`, borderRadius:6, padding:"7px 14px", cursor:"pointer", fontFamily:T.font }}>
+                      ⚡ Trigger Now
+                    </button>
+                  ) : (
+                    <div style={{ background:T.amberBg, border:`1px solid ${T.amberBorder}`, borderRadius:8, padding:"12px 14px" }}>
+                      <div style={{ fontSize:12, fontWeight:600, color:T.amberText, marginBottom:6 }}>Trigger manual settlement?</div>
+                      <div style={{ fontSize:12, color:T.amberText, opacity:0.9, marginBottom:12, lineHeight:1.5 }}>This will transfer your available balance to your linked settlement account.</div>
+                      <div style={{ display:"flex", gap:8 }}>
+                        <button onClick={() => setShowTriggerConfirm(false)}
+                          style={{ flex:1, background:T.amberText, color:T.white, border:"none", borderRadius:6, padding:"8px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:T.font }}>Yes, Settle Now</button>
+                        <button onClick={() => setShowTriggerConfirm(false)}
+                          style={{ flex:1, background:T.white, color:T.grey600, border:`1px solid ${T.grey200}`, borderRadius:6, padding:"8px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:T.font }}>Cancel</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {account && !showRemoveConfirm && (
             <div style={{ marginTop:8, paddingTop:16, borderTop:`1px solid ${T.grey100}` }}>
               <button onClick={() => setShowRemoveConfirm(true)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:T.redErrText, fontWeight:600, padding:0, fontFamily:T.font }}>🗑 Remove Settlement Account</button>
@@ -1409,7 +1623,7 @@ function SettlementPanel({ account, onClose, onSave, onRemove }) {
 ═══════════════════════════════════════════════════════════ */
 const INR_RATES = { USD: 84.0, EUR: 90.5, GBP: 106.5, AUD: 55.0, SGD: 62.5, HKD: 10.8 };
 
-function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy }) {
+function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy, settlementAccount, setSettlementAccount }) {
   const currencies = dummy ? DUMMY_CURRENCIES : EMPTY_CURRENCIES;
   const transactions = dummy ? ALL_TRANSACTIONS : [];
   const activeCurrencies = currencies.filter(c => c.status === "Active");
@@ -1420,7 +1634,6 @@ function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy
   const fmtINR = "₹" + new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalINR);
 
   const [showSettlementPanel, setShowSettlementPanel] = useState(false);
-  const [settlementAccount,   setSettlementAccount]   = useState(null);
   const [hovSettlement,       setHovSettlement]       = useState(false);
   const [toast,               setToast]               = useState(null);
 
@@ -1453,7 +1666,12 @@ function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy
             <div>
               <div style={{ fontSize:12, color:T.grey400, fontWeight:500, marginBottom:8 }}>Settlement Account</div>
               {settlementAccount ? (
-                <div style={{ fontSize:14, fontWeight:700, color:T.black }}>{settlementAccount.bankName} ••••{settlementAccount.accountNumber.slice(-4)}</div>
+                <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:14, fontWeight:700, color:T.black }}>{settlementAccount.bankName} ••••{settlementAccount.accountNumber.slice(-4)}</span>
+                  {settlementAccount.autoSettle && (
+                    <span style={{ fontSize:11, fontWeight:700, background:T.greenBg, color:T.greenText, border:`1px solid ${T.greenBorder}`, borderRadius:20, padding:"2px 8px" }}>⏰ Auto</span>
+                  )}
+                </div>
               ) : (
                 <div style={{ fontSize:14, color:T.grey300, fontStyle:"italic" }}>No account linked</div>
               )}
@@ -2068,6 +2286,7 @@ export default function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [dummy, setDummy] = useState(true);
   const [detailCurrency, setDetailCurrency] = useState(DUMMY_CURRENCIES[0]);
+  const [settlementAccount, setSettlementAccount] = useState(null);
 
   const handleSetPage = id => setPage(id === "dashboard" ? "dashboard_app" : id);
 
@@ -2081,13 +2300,13 @@ export default function App() {
       case "landing":        return <LandingScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "setup":          return <SetupScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "initialising":   return <InitialisingScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
-      case "currency_detail":return <CurrencyDetailScreen cur={detailCurrency} setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
+      case "currency_detail":return <CurrencyDetailScreen cur={detailCurrency} setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} settlementAccount={settlementAccount} setSettlementAccount={setSettlementAccount} />;
       case "currencies":     return <CurrenciesScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "add_modal":      return <AddModalScreen setPage={handleSetPage} />;
       case "remove_modal":   return <RemoveModalScreen setPage={handleSetPage} cur={detailCurrency} />;
       case "dashboard_app":
       default:
-        return <DashboardAppScreen setPage={handleSetPage} setDetailCurrency={setDetailCurrency} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
+        return <DashboardAppScreen setPage={handleSetPage} setDetailCurrency={setDetailCurrency} onNav={handleNav} dummy={dummy} setDummy={setDummy} settlementAccount={settlementAccount} setSettlementAccount={setSettlementAccount} />;
     }
   };
 
