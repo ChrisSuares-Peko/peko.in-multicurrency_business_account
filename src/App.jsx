@@ -833,6 +833,8 @@ function SendPanel({ cur, beneficiaries, initialBenef, onClose }) {
 /* ═══════════════════════════════════════════════════════════
    ADD BENEFICIARY PANEL — 3-step, right side, 440px
 ═══════════════════════════════════════════════════════════ */
+const ACCOUNT_CURRENCIES = ["USD","EUR","GBP","AUD","SGD","HKD","JPY","CAD","CHF","CNY","INR","NZD","AED","MYR","THB","IDR","PHP","KRW","SEK","NOK","DKK"];
+
 function AddBeneficiaryPanel({ cur, onClose, onAdd }) {
   const [step, setStep] = useState(1);
   const [entityType, setEntityType] = useState("Business");
@@ -841,9 +843,11 @@ function AddBeneficiaryPanel({ cur, onClose, onAdd }) {
   const [companyName, setCompanyName] = useState("");
   const [accountName, setAccountName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
+  const [accountCurrency, setAccountCurrency] = useState(cur?.code || "");
   const [bankCountry, setBankCountry] = useState("");
   const [bankName, setBankName] = useState("");
   const [swiftCode, setSwiftCode] = useState("");
+  const [routingCode, setRoutingCode] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [city, setCity] = useState("");
   const [stateVal, setStateVal] = useState("");
@@ -851,12 +855,29 @@ function AddBeneficiaryPanel({ cur, onClose, onAdd }) {
   const [country, setCountry] = useState("");
 
   const step1Valid = firstName.trim() && lastName.trim() && (entityType === "Individual" || companyName.trim());
-  const step2Valid = accountName.trim() && accountNumber.trim() && bankCountry && bankName.trim() && swiftCode.trim();
+  const step2Valid = accountName.trim() && accountNumber.trim() && accountCurrency && bankCountry && bankName.trim() && swiftCode.trim();
   const step3Valid = streetAddress.trim() && city.trim() && country;
   const canContinue = step === 1 ? step1Valid : step === 2 ? step2Valid : step3Valid;
 
   const handleAdd = () => {
-    onAdd({ id: Date.now(), name: entityType === "Business" ? companyName : `${firstName} ${lastName}`, bank: bankName, acct: `••••${accountNumber.slice(-4) || "0000"}`, type: entityType, paymentMethod: "SWIFT", status: "Active" });
+    const bankDetails = {
+      account_name: accountName,
+      account_number: accountNumber,
+      account_currency: accountCurrency,
+      bank_country_code: bankCountry,
+      bank_name: bankName,
+      swift_code: swiftCode,
+      ...(routingCode.trim() ? { account_routing_params: [{ param_name: "bank_code", param_value: routingCode.trim() }] } : {}),
+    };
+    const payload = {
+      reference_id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `ref_${Date.now()}`,
+      entity_type: entityType,
+      ...(entityType === "Individual" ? { first_name: firstName, last_name: lastName } : { company_name: companyName }),
+      payment_methods: ["SWIFT"],
+      beneficiary_bank_details: bankDetails,
+      beneficiary_address: { street_address: streetAddress, city, state: stateVal, postcode, country_code: country },
+    };
+    onAdd({ id: Date.now(), name: entityType === "Business" ? companyName : `${firstName} ${lastName}`, bank: bankName, acct: `••••${accountNumber.slice(-4) || "0000"}`, type: entityType, paymentMethod: "SWIFT", status: "Active", _payload: payload });
     onClose();
   };
 
@@ -949,11 +970,27 @@ function AddBeneficiaryPanel({ cur, onClose, onAdd }) {
               <Input label="Account Number *" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="Up to 17 digits" />
               <div style={{ fontSize:11, color:T.grey400, marginTop:4 }}>Up to 17 digits</div>
             </div>
+            <div>
+              <label style={{ fontSize:12, fontWeight:600, color:T.grey600, display:"block", marginBottom:4 }}>Account Currency *</label>
+              {cur?.code ? (
+                <div style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:`1px solid ${T.grey200}`, fontSize:14, color:T.grey400, background:"#FAFAFA", boxSizing:"border-box" }}>{cur.code}</div>
+              ) : (
+                <select value={accountCurrency} onChange={e => setAccountCurrency(e.target.value)} style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:`1px solid ${accountCurrency ? T.grey200 : T.grey200}`, fontSize:14, color: accountCurrency ? T.black : T.grey400, fontFamily:T.font, background:T.white, outline:"none", boxSizing:"border-box" }}>
+                  <option value="">Select currency</option>
+                  {ACCOUNT_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              )}
+              <div style={{ fontSize:11, color:T.grey400, marginTop:4 }}>Currency of the beneficiary's bank account</div>
+            </div>
             <SelectField label="Bank Country Code *" value={bankCountry} onChange={e => setBankCountry(e.target.value)} />
             <Input label="Bank Name *" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Name of the bank" />
             <div>
               <Input label="SWIFT Code *" value={swiftCode} onChange={e => setSwiftCode(e.target.value)} placeholder="8 or 11 character BIC code" />
               <div style={{ fontSize:11, color:T.grey400, marginTop:4 }}>8 or 11 character BIC code</div>
+            </div>
+            <div>
+              <Input label="Bank Routing Code (optional)" value={routingCode} onChange={e => setRoutingCode(e.target.value)} placeholder="e.g. 897678" />
+              <div style={{ fontSize:11, color:T.grey400, marginTop:4 }}>Required for some countries (e.g. sort code, BSB, routing number)</div>
             </div>
             <div style={{ background:T.grey50, borderRadius:8, padding:"12px 14px" }}>
               <div style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Step 1 Summary</div>
@@ -974,7 +1011,7 @@ function AddBeneficiaryPanel({ cur, onClose, onAdd }) {
             <SelectField label="Country Code *" value={country} onChange={e => setCountry(e.target.value)} />
             <div style={{ background:T.grey50, borderRadius:8, padding:"14px" }}>
               <div style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:0.5, marginBottom:10 }}>Review Summary</div>
-              {[["Name", entityType === "Business" ? companyName : `${firstName} ${lastName}`], ["Type", entityType], ["Account Name", accountName], ["Account #", `••••${accountNumber.slice(-4) || "----"}`], ["Bank", bankName], ["SWIFT", swiftCode], ["Bank Country", bankCountry]].map(([lbl, val]) => (
+              {[["Name", entityType === "Business" ? companyName : `${firstName} ${lastName}`], ["Type", entityType], ["Account Name", accountName], ["Account #", `••••${accountNumber.slice(-4) || "----"}`], ["Currency", accountCurrency], ["Bank", bankName], ["SWIFT", swiftCode], ["Bank Country", bankCountry], ...(routingCode.trim() ? [["Routing Code", routingCode]] : [])].map(([lbl, val]) => (
                 <div key={lbl} style={{ display:"flex", justifyContent:"space-between", marginBottom:6, fontSize:13 }}>
                   <span style={{ color:T.grey400 }}>{lbl}</span>
                   <span style={{ fontWeight:600, color:T.black }}>{val || "—"}</span>
@@ -1249,6 +1286,125 @@ function CurrencyCard({ c, onClick, dummy }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   SETTLEMENT ACCOUNT PANEL
+═══════════════════════════════════════════════════════════ */
+function SettlementPanel({ account, onClose, onSave, onRemove }) {
+  const [holderName,      setHolderName]      = useState(account?.holderName      || "");
+  const [bankName,        setBankName]        = useState(account?.bankName        || "");
+  const [accountNumber,   setAccountNumber]   = useState(account?.accountNumber   || "");
+  const [confirmNumber,   setConfirmNumber]   = useState(account?.accountNumber   || "");
+  const [ifscSwift,       setIfscSwift]       = useState(account?.ifscSwift       || "");
+  const [bankCountry,     setBankCountry]     = useState(account?.bankCountry     || "");
+  const [accountCurrency, setAccountCurrency] = useState(account?.accountCurrency || "");
+  const [accountType,     setAccountType]     = useState(account?.accountType     || "Current");
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [visible,         setVisible]         = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true));
+    const onKey = e => { if (e.key === "Escape") handleClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => { cancelAnimationFrame(id); document.removeEventListener("keydown", onKey); };
+  }, []);
+
+  const handleClose = () => { setVisible(false); setTimeout(onClose, 300); };
+
+  const accountsMatch = !confirmNumber || confirmNumber === accountNumber;
+  const isValid = holderName.trim() && bankName.trim() && accountNumber.trim() &&
+                  confirmNumber === accountNumber && ifscSwift.trim() && bankCountry && accountCurrency;
+
+  const handleSave = () => {
+    if (!isValid) return;
+    onSave({ holderName, bankName, accountNumber, ifscSwift, bankCountry, accountCurrency, accountType });
+    handleClose();
+  };
+
+  const selStyle = { width:"100%", padding:"10px 12px", borderRadius:8, border:`1px solid ${T.grey200}`, fontSize:14, fontFamily:T.font, background:T.white, outline:"none", boxSizing:"border-box" };
+
+  return (
+    <>
+      <div onClick={handleClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:499, opacity: visible ? 1 : 0, transition:"opacity 0.3s" }} />
+      <div style={{ position:"fixed", right:0, top:0, width:420, height:"100vh", background:T.white, boxShadow:"-4px 0 24px rgba(0,0,0,0.12)", zIndex:500, display:"flex", flexDirection:"column", transform: visible ? "translateX(0)" : "translateX(100%)", transition:"transform 0.3s ease-out" }}>
+
+        {/* Header */}
+        <div style={{ padding:"20px 24px", borderBottom:`1px solid ${T.grey100}`, flexShrink:0 }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+            <div>
+              <div style={{ fontSize:17, fontWeight:700, color:T.black }}>Settlement Account</div>
+              <div style={{ fontSize:13, color:T.grey400, marginTop:3 }}>Add a bank account to receive settlements</div>
+            </div>
+            <button onClick={handleClose} style={{ border:"none", background:"none", cursor:"pointer", fontSize:22, color:T.grey400, lineHeight:1, padding:0 }}>×</button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ flex:1, overflowY:"auto", padding:"20px 24px", display:"flex", flexDirection:"column", gap:14 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:T.black }}>Account Holder Details</div>
+          <Input label="Account Holder Name *" value={holderName} onChange={e => setHolderName(e.target.value)} placeholder="Full name as it appears on the bank account" />
+
+          <div style={{ fontSize:13, fontWeight:700, color:T.black, marginTop:4 }}>Bank Details</div>
+          <Input label="Bank Name *" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Name of the bank" />
+          <Input label="Account Number *" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="Enter account number" />
+          <div>
+            <Input label="Confirm Account Number *" value={confirmNumber} onChange={e => setConfirmNumber(e.target.value)} placeholder="Re-enter account number" />
+            {confirmNumber && !accountsMatch && <div style={{ fontSize:11, color:T.redErrText, marginTop:4 }}>Account numbers do not match</div>}
+          </div>
+          <div>
+            <Input label="IFSC Code / SWIFT Code *" value={ifscSwift} onChange={e => setIfscSwift(e.target.value)} placeholder="IFSC (India) or SWIFT/BIC code" />
+            <div style={{ fontSize:11, color:T.grey400, marginTop:4 }}>Enter IFSC for Indian banks or SWIFT code for international banks</div>
+          </div>
+          <div>
+            <label style={{ fontSize:12, fontWeight:600, color:T.grey600, display:"block", marginBottom:4 }}>Bank Country *</label>
+            <select value={bankCountry} onChange={e => setBankCountry(e.target.value)} style={{ ...selStyle, color: bankCountry ? T.black : T.grey400 }}>
+              <option value="">Select country</option>
+              {COUNTRY_CODES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize:12, fontWeight:600, color:T.grey600, display:"block", marginBottom:4 }}>Account Currency *</label>
+            <select value={accountCurrency} onChange={e => setAccountCurrency(e.target.value)} style={{ ...selStyle, color: accountCurrency ? T.black : T.grey400 }}>
+              <option value="">Select currency</option>
+              {ACCOUNT_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <div style={{ fontSize:13, fontWeight:700, color:T.black, marginBottom:10 }}>Account Type</div>
+            <div style={{ display:"flex", gap:8 }}>
+              {["Current","Savings"].map(t => (
+                <div key={t} onClick={() => setAccountType(t)} style={{ flex:1, padding:"10px", borderRadius:8, border:`1.5px solid ${accountType === t ? T.redPrimary : T.grey200}`, background: accountType === t ? T.redLight : T.white, color: accountType === t ? T.redPrimary : T.grey600, textAlign:"center", cursor:"pointer", fontSize:13, fontWeight:600, transition:"all 0.15s" }}>{t}</div>
+              ))}
+            </div>
+          </div>
+
+          {account && !showRemoveConfirm && (
+            <div style={{ marginTop:8, paddingTop:16, borderTop:`1px solid ${T.grey100}` }}>
+              <button onClick={() => setShowRemoveConfirm(true)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:T.redErrText, fontWeight:600, padding:0, fontFamily:T.font }}>🗑 Remove Settlement Account</button>
+            </div>
+          )}
+          {showRemoveConfirm && (
+            <div style={{ background:T.redErrBg, border:`1px solid ${T.redErrBorder}`, borderRadius:10, padding:"16px" }}>
+              <div style={{ fontSize:13, fontWeight:600, color:T.redErrText, marginBottom:6 }}>Remove this settlement account?</div>
+              <div style={{ fontSize:12, color:T.redErrText, opacity:0.8, marginBottom:14 }}>This will unlink the account. You can always add a new one later.</div>
+              <div style={{ display:"flex", gap:8 }}>
+                <button onClick={() => { onRemove(); handleClose(); }} style={{ flex:1, background:T.redErrText, color:T.white, border:"none", borderRadius:8, padding:"9px", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:T.font }}>Yes, Remove</button>
+                <button onClick={() => setShowRemoveConfirm(false)} style={{ flex:1, background:T.white, color:T.grey600, border:`1px solid ${T.grey200}`, borderRadius:8, padding:"9px", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:T.font }}>Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ flexShrink:0, padding:"12px 24px 20px", borderTop:`1px solid ${T.grey100}` }}>
+          <BtnPrimary onClick={handleSave} disabled={!isValid} style={{ width:"100%", padding:"13px", marginBottom:10 }}>Save Settlement Account</BtnPrimary>
+          <div onClick={handleClose} style={{ textAlign:"center", fontSize:13, color:T.grey400, cursor:"pointer", fontWeight:500 }}>Cancel</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    DASHBOARD APP SCREEN
 ═══════════════════════════════════════════════════════════ */
 const INR_RATES = { USD: 84.0, EUR: 90.5, GBP: 106.5, AUD: 55.0, SGD: 62.5, HKD: 10.8 };
@@ -1263,6 +1419,12 @@ function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy
     : 0;
   const fmtINR = "₹" + new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalINR);
 
+  const [showSettlementPanel, setShowSettlementPanel] = useState(false);
+  const [settlementAccount,   setSettlementAccount]   = useState(null);
+  const [hovSettlement,       setHovSettlement]       = useState(false);
+  const [toast,               setToast]               = useState(null);
+
+  const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 3000); };
   const handleCurrencyClick = (c) => { setDetailCurrency(c); setPage("currency_detail"); };
 
   return (
@@ -1285,6 +1447,21 @@ function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy
               <div style={{ fontSize:12, color:stat.color, opacity:0.8 }}>{stat.label}</div>
             </div>
           ))}
+          {/* Settlement Account card */}
+          <div onClick={() => setShowSettlementPanel(true)} onMouseEnter={() => setHovSettlement(true)} onMouseLeave={() => setHovSettlement(false)}
+            style={{ flex:1, background: hovSettlement ? "#F5F8FF" : T.white, borderRadius:12, padding:"20px", boxShadow:"0 1px 4px rgba(0,0,0,0.06)", border:`1px solid ${hovSettlement ? T.grey200 : T.grey100}`, cursor:"pointer", transition:"all 0.15s", display:"flex", flexDirection:"column", justifyContent:"space-between", minHeight:80 }}>
+            <div>
+              <div style={{ fontSize:12, color:T.grey400, fontWeight:500, marginBottom:8 }}>Settlement Account</div>
+              {settlementAccount ? (
+                <div style={{ fontSize:14, fontWeight:700, color:T.black }}>{settlementAccount.bankName} ••••{settlementAccount.accountNumber.slice(-4)}</div>
+              ) : (
+                <div style={{ fontSize:14, color:T.grey300, fontStyle:"italic" }}>No account linked</div>
+              )}
+            </div>
+            <div style={{ display:"flex", justifyContent:"flex-end", marginTop:8 }}>
+              <span style={{ fontSize:20, lineHeight:1, color: settlementAccount ? T.grey400 : T.redPrimary, fontWeight:300 }}>{settlementAccount ? "›" : "+"}</span>
+            </div>
+          </div>
         </div>
 
         {/* Currency Wallets — full width */}
@@ -1329,6 +1506,18 @@ function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy
         </div>
         <div style={{ marginTop:40 }}><Footer /></div>
       </div>
+
+      {showSettlementPanel && (
+        <SettlementPanel
+          account={settlementAccount}
+          onClose={() => setShowSettlementPanel(false)}
+          onSave={acc => { setSettlementAccount(acc); showToast("Settlement account added successfully"); }}
+          onRemove={() => { setSettlementAccount(null); showToast("Settlement account removed"); }}
+        />
+      )}
+      {toast && (
+        <div style={{ position:"fixed", bottom:28, left:"50%", transform:"translateX(-50%)", background:"#1F2937", color:"#FFF", padding:"12px 28px", borderRadius:10, fontSize:13, fontWeight:600, zIndex:700, boxShadow:"0 4px 20px rgba(0,0,0,0.25)", whiteSpace:"nowrap", pointerEvents:"none" }}>✓ {toast}</div>
+      )}
     </AppShell>
   );
 }
@@ -1877,7 +2066,7 @@ function RemoveModalScreen({ setPage, cur }) {
 export default function App() {
   const [page, setPage] = useState("landing");
   const [navOpen, setNavOpen] = useState(false);
-  const [dummy, setDummy] = useState(false);
+  const [dummy, setDummy] = useState(true);
   const [detailCurrency, setDetailCurrency] = useState(DUMMY_CURRENCIES[0]);
 
   const handleSetPage = id => setPage(id === "dashboard" ? "dashboard_app" : id);
