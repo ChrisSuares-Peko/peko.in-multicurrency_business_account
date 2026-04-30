@@ -788,12 +788,7 @@ function ReceiveModal({ cur, onClose }) {
           {fields.map((f, i) => (
             <div key={i} style={{ background:T.grey50, borderRadius:8, padding:"10px 14px" }}>
               <div style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:0.5, marginBottom:4 }}>{f.label}</div>
-              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ fontFamily:"monospace", fontSize:13, color:T.black, flex:1 }}>{f.value}</span>
-                <button onClick={() => handleCopy(i, f.value)} style={{ fontSize:12, fontWeight:600, padding:"4px 10px", borderRadius:6, border:`1px solid ${copied[i] ? T.greenBorder : T.grey200}`, background: copied[i] ? T.greenBg : T.white, color: copied[i] ? T.greenText : T.grey600, cursor:"pointer", transition:"all 0.2s", whiteSpace:"nowrap" }}>
-                  {copied[i] ? "✓ Copied" : "Copy"}
-                </button>
-              </div>
+              <span style={{ fontFamily:"monospace", fontSize:13, color:T.black }}>{f.value}</span>
             </div>
           ))}
         </div>
@@ -1388,8 +1383,13 @@ function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy, settlement
             <div style={{ fontSize:28, fontWeight:700, color:T.black }}>
               {dummy ? `${cur.symbol}${cur.balance}` : <span style={{ color:T.grey300 }}>—</span>}
             </div>
+            {dummy && INR_RATES[cur.code] && (
+              <div style={{ fontSize:14, color:T.grey400, marginTop:2 }}>
+                ≈ ₹{new Intl.NumberFormat("en-IN", { minimumFractionDigits:2, maximumFractionDigits:2 }).format(parseFloat(cur.balance.replace(/,/g, "")) * INR_RATES[cur.code])}
+              </div>
+            )}
             {dummy && cur.pending !== "0.00" && (
-              <div style={{ fontSize:12, color:T.grey400 }}>+ {cur.symbol}{cur.pending} pending</div>
+              <div style={{ fontSize:12, color:T.grey400, marginTop:2 }}>+ {cur.symbol}{cur.pending} pending</div>
             )}
           </div>
         </div>
@@ -1825,14 +1825,21 @@ function AddCurrencyCard({ onClick }) {
    TRANSACTIONS SCREEN
 ═══════════════════════════════════════════════════════════ */
 const TXN_PAGE_SIZE = 20;
-const TXN_CURRENCIES = ["USD","EUR","GBP","AUD","SGD","HKD"];
+const TXN_CURR_OPTIONS = [
+  { code:"USD", flag:"🇺🇸", name:"United States Dollar" },
+  { code:"EUR", flag:"🇪🇺", name:"Euro" },
+  { code:"GBP", flag:"🇬🇧", name:"British Pound" },
+  { code:"AUD", flag:"🇦🇺", name:"Australian Dollar" },
+  { code:"SGD", flag:"🇸🇬", name:"Singapore Dollar" },
+  { code:"HKD", flag:"🇭🇰", name:"Hong Kong Dollar" },
+];
 const TXN_STATUSES = ["Active","Pending","Failed"];
 const TXN_CURR_META = { USD:{sym:"$",flag:"🇺🇸"}, EUR:{sym:"€",flag:"🇪🇺"}, GBP:{sym:"£",flag:"🇬🇧"}, AUD:{sym:"A$",flag:"🇦🇺"}, SGD:{sym:"S$",flag:"🇸🇬"}, HKD:{sym:"HK$",flag:"🇭🇰"} };
 const TXN_PM_COLORS = { ACH:["#EFF6FF","#1D4ED8"], SWIFT:["#F5F3FF","#5B21B6"], SEPA:["#F0FDF4","#15803D"], FEDWIRE:["#FFF7ED","#C2410C"], FASTER_PAYMENTS:["#FDF4FF","#9333EA"], FAST:["#ECFDF5","#059669"] };
 const TXN_PM_LABEL = { FASTER_PAYMENTS:"Faster Payments", FEDWIRE:"Fedwire" };
 
 function TransactionsScreen({ setPage, onNav, dummy, setDummy, initCurrency }) {
-  const [currencies, setCurrencies] = useState(initCurrency ? [initCurrency] : []);
+  const [currencyFilter, setCurrencyFilter] = useState(initCurrency || "");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -1842,7 +1849,7 @@ function TransactionsScreen({ setPage, onNav, dummy, setDummy, initCurrency }) {
   const data = dummy ? ALL_TXN_DATA : [];
 
   const filtered = data.filter(tx => {
-    if (currencies.length > 0 && !currencies.includes(tx.code)) return false;
+    if (currencyFilter && tx.code !== currencyFilter) return false;
     if (dateFrom && tx.dt < dateFrom) return false;
     if (dateTo && tx.dt > dateTo + "T23:59") return false;
     if (statusFilter && tx.status !== statusFilter) return false;
@@ -1871,8 +1878,6 @@ function TransactionsScreen({ setPage, onNav, dummy, setDummy, initCurrency }) {
     const a = document.createElement("a"); a.href = url; a.download = "peko_transactions.csv"; a.click();
     URL.revokeObjectURL(url);
   };
-
-  const toggleCurrency = c => { setCurrencies(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]); setTxnPage(1); };
 
   const fmtDt = dt => {
     const d = new Date(dt);
@@ -1907,24 +1912,16 @@ function TransactionsScreen({ setPage, onNav, dummy, setDummy, initCurrency }) {
 
         {/* Filters */}
         <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", padding:"14px 18px", marginBottom:18, display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-            <span style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:"0.4px", marginRight:2 }}>Currency</span>
-            {TXN_CURRENCIES.map(c => {
-              const sel = currencies.includes(c);
-              const d = TXN_CURR_META[c] || {};
-              return (
-                <button key={c} onClick={() => toggleCurrency(c)}
-                  style={{ padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:T.font, border: sel ? `1.5px solid ${T.redPrimary}` : `1.5px solid ${T.grey200}`, background: sel ? T.redLight : T.white, color: sel ? T.redPrimary : T.grey600, transition:"all 0.12s" }}>
-                  {d.flag} {c}
-                </button>
-              );
-            })}
-            {currencies.length > 0 && (
-              <button onClick={() => { setCurrencies([]); setTxnPage(1); }}
-                style={{ padding:"3px 8px", borderRadius:20, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:T.font, border:`1px solid ${T.grey200}`, background:"transparent", color:T.grey400 }}>
-                ✕ Clear
-              </button>
-            )}
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:"0.4px" }}>Currency</span>
+            <select value={currencyFilter} onChange={e => { setCurrencyFilter(e.target.value); setTxnPage(1); }}
+              style={{ width:200, padding:"6px 10px", border:`1px solid ${T.grey200}`, borderRadius:6, fontSize:13, fontFamily:T.font, color: currencyFilter ? T.black : T.grey400, outline:"none", background:T.white, cursor:"pointer" }}>
+              <option value="">All Currencies</option>
+              <option disabled>──────────────────</option>
+              {TXN_CURR_OPTIONS.map(o => (
+                <option key={o.code} value={o.code}>{o.flag} {o.code} — {o.name}</option>
+              ))}
+            </select>
           </div>
           <div style={{ width:1, height:28, background:T.grey200, flexShrink:0 }} />
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
