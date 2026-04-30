@@ -100,6 +100,71 @@ const ALL_TRANSACTIONS = [
   { date:"01 Mar", desc:"Monthly Revenue",  amount:"+$18,600",  status:"Active", code:"USD" },
 ];
 
+const ALL_TXN_DATA = [
+  { id:"TXN-2026-000062", dt:"2026-04-28T09:15", desc:"Shopify Payout — April W4",         method:"ACH",             code:"USD", sym:"$",    raw:14200.00,  status:"Active"  },
+  { id:"TXN-2026-000061", dt:"2026-04-25T14:30", desc:"Supplier Invoice — Tech Parts",     method:"SWIFT",           code:"EUR", sym:"€",    raw:-6800.00,  status:"Pending" },
+  { id:"TXN-2026-000060", dt:"2026-04-22T11:00", desc:"FX Conversion — EUR to GBP",        method:"SEPA",            code:"EUR", sym:"€",    raw:-12000.00, status:"Active"  },
+  { id:"TXN-2026-000059", dt:"2026-04-18T16:45", desc:"Amazon Marketplace Payout",         method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:8900.00,   status:"Active"  },
+  { id:"TXN-2026-000058", dt:"2026-04-15T10:20", desc:"Payroll — April (SGD)",             method:"FAST",            code:"SGD", sym:"S$",   raw:-42000.00, status:"Active"  },
+  { id:"TXN-2026-000057", dt:"2026-04-12T09:00", desc:"HKD Client Invoice — April",        method:"SWIFT",           code:"HKD", sym:"HK$",  raw:45000.00,  status:"Active"  },
+  { id:"TXN-2026-000056", dt:"2026-04-10T14:00", desc:"AUD Consulting Fee — Q1",           method:"SWIFT",           code:"AUD", sym:"A$",   raw:7600.00,   status:"Active"  },
+  { id:"TXN-2026-000055", dt:"2026-03-28T15:00", desc:"Stripe Payout — March W4",          method:"ACH",             code:"USD", sym:"$",    raw:9800.00,   status:"Active"  },
+  { id:"TXN-2026-000054", dt:"2026-03-26T09:30", desc:"SEPA Transfer — Zurich Office",     method:"SEPA",            code:"EUR", sym:"€",    raw:-4500.00,  status:"Active"  },
+  { id:"TXN-2026-000053", dt:"2026-03-25T14:32", desc:"Stripe Payout — March",             method:"SWIFT",           code:"USD", sym:"$",    raw:12400.00,  status:"Active"  },
+  { id:"TXN-2026-000052", dt:"2026-03-24T11:15", desc:"NatWest Inbound — Client A",        method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:7200.00,   status:"Active"  },
+  { id:"TXN-2026-000051", dt:"2026-03-22T10:00", desc:"Supplier Payment — Acme Corp",      method:"SWIFT",           code:"USD", sym:"$",    raw:-8200.00,  status:"Active"  },
+  { id:"TXN-2026-000050", dt:"2026-03-20T14:00", desc:"HK Client Invoice Payment",         method:"SWIFT",           code:"HKD", sym:"HK$",  raw:38000.00,  status:"Active"  },
+  { id:"TXN-2026-000049", dt:"2026-03-18T09:00", desc:"Amazon Marketplace Payout",         method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:5750.00,   status:"Active"  },
+  { id:"TXN-2026-000048", dt:"2026-03-16T13:30", desc:"AUD Vendor — Sydney Logistics",     method:"SWIFT",           code:"AUD", sym:"A$",   raw:-3200.00,  status:"Failed"  },
+  { id:"TXN-2026-000047", dt:"2026-03-15T10:00", desc:"Wire Transfer — Office Rent",       method:"FEDWIRE",         code:"USD", sym:"$",    raw:-4500.00,  status:"Active"  },
+  { id:"TXN-2026-000046", dt:"2026-03-14T15:45", desc:"SGD Payroll Top-up",                method:"FAST",            code:"SGD", sym:"S$",   raw:-18500.00, status:"Active"  },
+  { id:"TXN-2026-000045", dt:"2026-03-12T11:00", desc:"EUR Invoice — Berlin Client",       method:"SEPA",            code:"EUR", sym:"€",    raw:6400.00,   status:"Active"  },
+  { id:"TXN-2026-000044", dt:"2026-03-10T09:20", desc:"PayPal Settlement",                 method:"ACH",             code:"USD", sym:"$",    raw:3200.00,   status:"Active"  },
+  { id:"TXN-2026-000043", dt:"2026-03-08T14:00", desc:"HKD Office Lease",                  method:"SWIFT",           code:"HKD", sym:"HK$",  raw:-15000.00, status:"Active"  },
+  { id:"TXN-2026-000042", dt:"2026-03-06T10:30", desc:"AUD Client Revenue — ANZ",          method:"SWIFT",           code:"AUD", sym:"A$",   raw:11200.00,  status:"Active"  },
+  { id:"TXN-2026-000041", dt:"2026-03-05T09:00", desc:"Vendor Payment — Global Traders",   method:"SWIFT",           code:"USD", sym:"$",    raw:-2900.00,  status:"Active"  },
+  { id:"TXN-2026-000040", dt:"2026-03-03T11:30", desc:"SGD Revenue — DBS Client",          method:"FAST",            code:"SGD", sym:"S$",   raw:9800.00,   status:"Active"  },
+  { id:"TXN-2026-000039", dt:"2026-03-01T09:00", desc:"Monthly Revenue — Shopify",         method:"ACH",             code:"USD", sym:"$",    raw:18600.00,  status:"Active"  },
+  { id:"TXN-2026-000038", dt:"2026-02-28T15:00", desc:"EUR Payroll — February",            method:"SEPA",            code:"EUR", sym:"€",    raw:-28000.00, status:"Active"  },
+  { id:"TXN-2026-000037", dt:"2026-02-26T14:00", desc:"GBP Invoice — London Client",       method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:12400.00,  status:"Active"  },
+  { id:"TXN-2026-000036", dt:"2026-02-25T09:30", desc:"USD Platform Revenue",              method:"ACH",             code:"USD", sym:"$",    raw:22000.00,  status:"Active"  },
+  { id:"TXN-2026-000035", dt:"2026-02-24T11:00", desc:"AUD Consulting Fee — Melbourne",    method:"SWIFT",           code:"AUD", sym:"A$",   raw:8600.00,   status:"Active"  },
+  { id:"TXN-2026-000034", dt:"2026-02-22T14:30", desc:"SGD Transfer Failed — OCBC",        method:"FAST",            code:"SGD", sym:"S$",   raw:-6200.00,  status:"Failed"  },
+  { id:"TXN-2026-000033", dt:"2026-02-20T10:00", desc:"HKD Revenue — Asia Client",         method:"SWIFT",           code:"HKD", sym:"HK$",  raw:52000.00,  status:"Active"  },
+  { id:"TXN-2026-000032", dt:"2026-02-18T09:15", desc:"USD Supplier — TechParts Inc",      method:"FEDWIRE",         code:"USD", sym:"$",    raw:-7400.00,  status:"Active"  },
+  { id:"TXN-2026-000031", dt:"2026-02-16T14:00", desc:"EUR Client Invoice — Paris",        method:"SEPA",            code:"EUR", sym:"€",    raw:9200.00,   status:"Active"  },
+  { id:"TXN-2026-000030", dt:"2026-02-14T11:30", desc:"GBP Vendor Payment",                method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:-3800.00,  status:"Active"  },
+  { id:"TXN-2026-000029", dt:"2026-02-12T09:00", desc:"AUD Insurance Premium",             method:"SWIFT",           code:"AUD", sym:"A$",   raw:-2400.00,  status:"Active"  },
+  { id:"TXN-2026-000028", dt:"2026-02-10T14:30", desc:"USD Amazon Payout — Feb W2",        method:"ACH",             code:"USD", sym:"$",    raw:16800.00,  status:"Active"  },
+  { id:"TXN-2026-000027", dt:"2026-02-08T11:00", desc:"SGD Office Rent — February",        method:"FAST",            code:"SGD", sym:"S$",   raw:-8500.00,  status:"Active"  },
+  { id:"TXN-2026-000026", dt:"2026-02-06T09:30", desc:"HKD Supplier — Shenzhen Co",        method:"SWIFT",           code:"HKD", sym:"HK$",  raw:-22000.00, status:"Active"  },
+  { id:"TXN-2026-000025", dt:"2026-02-04T14:00", desc:"EUR Tax Payment — Q1",              method:"SEPA",            code:"EUR", sym:"€",    raw:-15600.00, status:"Pending" },
+  { id:"TXN-2026-000024", dt:"2026-02-02T10:30", desc:"USD Wire — Insurance Premium",      method:"FEDWIRE",         code:"USD", sym:"$",    raw:-3200.00,  status:"Active"  },
+  { id:"TXN-2026-000023", dt:"2026-02-01T09:00", desc:"USD Platform Revenue — February",   method:"ACH",             code:"USD", sym:"$",    raw:24600.00,  status:"Active"  },
+  { id:"TXN-2026-000022", dt:"2026-01-30T15:00", desc:"GBP Revenue — London Client",       method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:18200.00,  status:"Active"  },
+  { id:"TXN-2026-000021", dt:"2026-01-28T11:00", desc:"AUD Client — Westpac Payout",       method:"SWIFT",           code:"AUD", sym:"A$",   raw:9400.00,   status:"Active"  },
+  { id:"TXN-2026-000020", dt:"2026-01-26T14:30", desc:"SGD Revenue — MAS Client",          method:"FAST",            code:"SGD", sym:"S$",   raw:14200.00,  status:"Active"  },
+  { id:"TXN-2026-000019", dt:"2026-01-24T09:00", desc:"USD Payroll — January",             method:"ACH",             code:"USD", sym:"$",    raw:-48000.00, status:"Active"  },
+  { id:"TXN-2026-000018", dt:"2026-01-22T11:30", desc:"EUR Transfer — Munich Office",      method:"SEPA",            code:"EUR", sym:"€",    raw:-11000.00, status:"Active"  },
+  { id:"TXN-2026-000017", dt:"2026-01-20T14:00", desc:"HKD Revenue — HSBC Inbound",        method:"SWIFT",           code:"HKD", sym:"HK$",  raw:68000.00,  status:"Active"  },
+  { id:"TXN-2026-000016", dt:"2026-01-18T10:00", desc:"GBP Vendor — NatWest Debit",        method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:-5600.00,  status:"Active"  },
+  { id:"TXN-2026-000015", dt:"2026-01-16T09:30", desc:"AUD Equipment Purchase",            method:"SWIFT",           code:"AUD", sym:"A$",   raw:-14800.00, status:"Active"  },
+  { id:"TXN-2026-000014", dt:"2026-01-14T14:00", desc:"USD Stripe Payout — Jan W2",        method:"ACH",             code:"USD", sym:"$",    raw:11200.00,  status:"Active"  },
+  { id:"TXN-2026-000013", dt:"2026-01-12T11:00", desc:"EUR Platform Revenue — January",    method:"SEPA",            code:"EUR", sym:"€",    raw:18400.00,  status:"Active"  },
+  { id:"TXN-2026-000012", dt:"2026-01-10T09:00", desc:"SGD Supplier — Jurong Co",          method:"FAST",            code:"SGD", sym:"S$",   raw:-7800.00,  status:"Active"  },
+  { id:"TXN-2026-000011", dt:"2026-01-08T14:30", desc:"HKD Office Deposit",                method:"SWIFT",           code:"HKD", sym:"HK$",  raw:-30000.00, status:"Pending" },
+  { id:"TXN-2026-000010", dt:"2026-01-06T10:00", desc:"USD Amazon Payout — Jan W1",        method:"ACH",             code:"USD", sym:"$",    raw:8600.00,   status:"Active"  },
+  { id:"TXN-2026-000009", dt:"2026-01-05T11:30", desc:"GBP Consulting Revenue",            method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:9800.00,   status:"Active"  },
+  { id:"TXN-2026-000008", dt:"2026-01-04T09:00", desc:"AUD Revenue — CBA Inbound",         method:"SWIFT",           code:"AUD", sym:"A$",   raw:16400.00,  status:"Active"  },
+  { id:"TXN-2026-000007", dt:"2026-01-03T14:00", desc:"EUR FX Conversion to USD",          method:"SEPA",            code:"EUR", sym:"€",    raw:-8000.00,  status:"Active"  },
+  { id:"TXN-2026-000006", dt:"2026-01-02T10:30", desc:"SGD January Opening Balance",       method:"FAST",            code:"SGD", sym:"S$",   raw:25000.00,  status:"Active"  },
+  { id:"TXN-2026-000005", dt:"2026-01-02T09:15", desc:"USD Wire — Platform Fees",          method:"FEDWIRE",         code:"USD", sym:"$",    raw:-1800.00,  status:"Failed"  },
+  { id:"TXN-2026-000004", dt:"2026-01-02T09:00", desc:"GBP Opening Transfer",              method:"FASTER_PAYMENTS", code:"GBP", sym:"£",    raw:50000.00,  status:"Active"  },
+  { id:"TXN-2026-000003", dt:"2026-01-01T14:00", desc:"HKD Opening Balance Transfer",      method:"SWIFT",           code:"HKD", sym:"HK$",  raw:100000.00, status:"Active"  },
+  { id:"TXN-2026-000002", dt:"2026-01-01T11:00", desc:"EUR Opening Balance Transfer",      method:"SEPA",            code:"EUR", sym:"€",    raw:80000.00,  status:"Active"  },
+  { id:"TXN-2026-000001", dt:"2026-01-01T09:00", desc:"USD Opening Balance Transfer",      method:"ACH",             code:"USD", sym:"$",    raw:100000.00, status:"Active"  },
+];
+
 const ALL_ADD_CURRENCIES = [
   { code:"CNY", name:"Chinese Yuan",      flag:"🇨🇳" },
   { code:"IDR", name:"Indonesian Rupiah", flag:"🇮🇩" },
@@ -1278,7 +1343,7 @@ function InitiateSettlementModal({ cur, settlementAccount, onClose, onAddSettlem
 /* ═══════════════════════════════════════════════════════════
    CURRENCY DETAIL SCREEN   ← defined BEFORE DashboardAppScreen
 ═══════════════════════════════════════════════════════════ */
-function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy, settlementAccount, setSettlementAccount }) {
+function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy, settlementAccount, setSettlementAccount, onViewTransactions }) {
   const [showReceive,          setShowReceive]          = useState(false);
   const [showSend,             setShowSend]             = useState(false);
   const [showAddBenef,         setShowAddBenef]         = useState(false);
@@ -1377,6 +1442,11 @@ function CurrencyDetailScreen({ cur, setPage, onNav, dummy, setDummy, settlement
                 ))}
               </tbody>
             </table>
+          )}
+          {transactions.length > 0 && (
+            <div onClick={() => onViewTransactions(cur.code)} style={{ padding:"12px 20px", textAlign:"center", fontSize:13, color:T.redPrimary, cursor:"pointer", fontWeight:600, borderTop:`1px solid ${T.grey100}` }}>
+              View all transactions →
+            </div>
           )}
         </div>
 
@@ -1623,7 +1693,7 @@ function SettlementPanel({ account, onClose, onSave, onRemove }) {
 ═══════════════════════════════════════════════════════════ */
 const INR_RATES = { USD: 84.0, EUR: 90.5, GBP: 106.5, AUD: 55.0, SGD: 62.5, HKD: 10.8 };
 
-function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy, settlementAccount, setSettlementAccount }) {
+function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy, settlementAccount, setSettlementAccount, onViewTransactions }) {
   const currencies = dummy ? DUMMY_CURRENCIES : EMPTY_CURRENCIES;
   const transactions = dummy ? ALL_TRANSACTIONS : [];
   const activeCurrencies = currencies.filter(c => c.status === "Active");
@@ -1718,7 +1788,7 @@ function DashboardAppScreen({ setPage, setDetailCurrency, onNav, dummy, setDummy
                   </div>
                 );
               })}
-              <div style={{ padding:"12px 20px", textAlign:"center", fontSize:13, color:T.redPrimary, cursor:"pointer", fontWeight:600 }}>View all transactions →</div>
+              <div onClick={() => onViewTransactions()} style={{ padding:"12px 20px", textAlign:"center", fontSize:13, color:T.redPrimary, cursor:"pointer", fontWeight:600 }}>View all transactions →</div>
             </div>
           )}
         </div>
@@ -1746,8 +1816,232 @@ function AddCurrencyCard({ onClick }) {
     <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{ borderRadius:12, border:`2px dashed ${hov ? T.redPrimary : T.grey200}`, background: hov ? T.redLight : "transparent", padding:"20px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, minHeight:128, transition:"all 0.15s" }}>
       <div style={{ width:36, height:36, borderRadius:"50%", background: hov ? T.redLight : T.grey100, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, color: hov ? T.redPrimary : T.grey400, border:`1px solid ${hov ? T.redPrimary : "transparent"}` }}>+</div>
-      <span style={{ fontSize:12, fontWeight:600, color: hov ? T.redPrimary : T.grey400 }}>Add Currency</span>
+      <span style={{ fontSize:12, fontWeight:600, color: hov ? T.redPrimary : T.grey400 }}>Open New Currency Account</span>
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TRANSACTIONS SCREEN
+═══════════════════════════════════════════════════════════ */
+const TXN_PAGE_SIZE = 20;
+const TXN_CURRENCIES = ["USD","EUR","GBP","AUD","SGD","HKD"];
+const TXN_STATUSES = ["Active","Pending","Failed"];
+const TXN_CURR_META = { USD:{sym:"$",flag:"🇺🇸"}, EUR:{sym:"€",flag:"🇪🇺"}, GBP:{sym:"£",flag:"🇬🇧"}, AUD:{sym:"A$",flag:"🇦🇺"}, SGD:{sym:"S$",flag:"🇸🇬"}, HKD:{sym:"HK$",flag:"🇭🇰"} };
+const TXN_PM_COLORS = { ACH:["#EFF6FF","#1D4ED8"], SWIFT:["#F5F3FF","#5B21B6"], SEPA:["#F0FDF4","#15803D"], FEDWIRE:["#FFF7ED","#C2410C"], FASTER_PAYMENTS:["#FDF4FF","#9333EA"], FAST:["#ECFDF5","#059669"] };
+const TXN_PM_LABEL = { FASTER_PAYMENTS:"Faster Payments", FEDWIRE:"Fedwire" };
+
+function TransactionsScreen({ setPage, onNav, dummy, setDummy, initCurrency }) {
+  const [currencies, setCurrencies] = useState(initCurrency ? [initCurrency] : []);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [txnPage, setTxnPage] = useState(1);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const data = dummy ? ALL_TXN_DATA : [];
+
+  const filtered = data.filter(tx => {
+    if (currencies.length > 0 && !currencies.includes(tx.code)) return false;
+    if (dateFrom && tx.dt < dateFrom) return false;
+    if (dateTo && tx.dt > dateTo + "T23:59") return false;
+    if (statusFilter && tx.status !== statusFilter) return false;
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / TXN_PAGE_SIZE));
+  const pageRows = filtered.slice((txnPage - 1) * TXN_PAGE_SIZE, txnPage * TXN_PAGE_SIZE);
+
+  const handleCopy = id => {
+    navigator.clipboard?.writeText(id).catch(() => {});
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1800);
+  };
+
+  const handleCSV = () => {
+    const cols = ["Date & Time","Description","Transaction ID","Payment Method","Currency","Amount","Status"];
+    const rows = filtered.map(tx => [
+      tx.dt, tx.desc, tx.id, tx.method, tx.code,
+      (tx.raw >= 0 ? "+" : "") + tx.sym + Math.abs(tx.raw).toFixed(2),
+      tx.status,
+    ]);
+    const csv = [cols, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type:"text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "peko_transactions.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleCurrency = c => { setCurrencies(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]); setTxnPage(1); };
+
+  const fmtDt = dt => {
+    const d = new Date(dt);
+    return d.toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" }) + ", " +
+      d.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit", hour12:true });
+  };
+
+  const fmtAmt = tx => (tx.raw >= 0 ? "+" : "") + tx.sym + Math.abs(tx.raw).toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 });
+
+  const TXN_TH = { padding:"10px 14px", fontSize:11, fontWeight:700, color:T.grey400, textAlign:"left", background:T.grey50, borderBottom:`1px solid ${T.grey100}`, whiteSpace:"nowrap", textTransform:"uppercase", letterSpacing:"0.5px" };
+  const TXN_TD = { padding:"11px 14px", fontSize:13, color:T.black, borderBottom:`1px solid ${T.grey100}`, verticalAlign:"middle" };
+
+  return (
+    <AppShell activePage="transactions" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
+      <div style={{ paddingTop:28, paddingBottom:48 }}>
+
+        {/* Header */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+          <div>
+            <button onClick={() => setPage("dashboard_app")}
+              style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:13, color:T.grey400, fontFamily:T.font, display:"flex", alignItems:"center", gap:4, marginBottom:6 }}>
+              ← Back to Accounts
+            </button>
+            <div style={{ fontSize:22, fontWeight:800, color:T.black }}>Transactions</div>
+            <div style={{ fontSize:13, color:T.grey400, marginTop:2 }}>All activity across your multicurrency wallets</div>
+          </div>
+          <button onClick={handleCSV}
+            style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", fontSize:13, fontWeight:600, color:T.white, background:T.redPrimary, border:"none", borderRadius:8, cursor:"pointer", fontFamily:T.font }}>
+            ↓ Download CSV
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", padding:"14px 18px", marginBottom:18, display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+            <span style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:"0.4px", marginRight:2 }}>Currency</span>
+            {TXN_CURRENCIES.map(c => {
+              const sel = currencies.includes(c);
+              const d = TXN_CURR_META[c] || {};
+              return (
+                <button key={c} onClick={() => toggleCurrency(c)}
+                  style={{ padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:T.font, border: sel ? `1.5px solid ${T.redPrimary}` : `1.5px solid ${T.grey200}`, background: sel ? T.redLight : T.white, color: sel ? T.redPrimary : T.grey600, transition:"all 0.12s" }}>
+                  {d.flag} {c}
+                </button>
+              );
+            })}
+            {currencies.length > 0 && (
+              <button onClick={() => { setCurrencies([]); setTxnPage(1); }}
+                style={{ padding:"3px 8px", borderRadius:20, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:T.font, border:`1px solid ${T.grey200}`, background:"transparent", color:T.grey400 }}>
+                ✕ Clear
+              </button>
+            )}
+          </div>
+          <div style={{ width:1, height:28, background:T.grey200, flexShrink:0 }} />
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:"0.4px" }}>From</span>
+            <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setTxnPage(1); }}
+              style={{ padding:"5px 8px", border:`1px solid ${T.grey200}`, borderRadius:6, fontSize:12, fontFamily:T.font, color:T.black, outline:"none" }} />
+            <span style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:"0.4px" }}>To</span>
+            <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setTxnPage(1); }}
+              style={{ padding:"5px 8px", border:`1px solid ${T.grey200}`, borderRadius:6, fontSize:12, fontFamily:T.font, color:T.black, outline:"none" }} />
+            {(dateFrom || dateTo) && (
+              <button onClick={() => { setDateFrom(""); setDateTo(""); setTxnPage(1); }}
+                style={{ padding:"3px 8px", borderRadius:20, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:T.font, border:`1px solid ${T.grey200}`, background:"transparent", color:T.grey400 }}>
+                ✕
+              </button>
+            )}
+          </div>
+          <div style={{ width:1, height:28, background:T.grey200, flexShrink:0 }} />
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{ fontSize:11, fontWeight:700, color:T.grey400, textTransform:"uppercase", letterSpacing:"0.4px" }}>Status</span>
+            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setTxnPage(1); }}
+              style={{ padding:"5px 8px", border:`1px solid ${T.grey200}`, borderRadius:6, fontSize:12, fontFamily:T.font, color:T.black, outline:"none", background:T.white, cursor:"pointer" }}>
+              <option value="">All</option>
+              {TXN_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+          <div style={{ padding:"12px 18px", borderBottom:`1px solid ${T.grey100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <span style={{ fontSize:13, fontWeight:600, color:T.grey600 }}>{filtered.length} transaction{filtered.length !== 1 ? "s" : ""}</span>
+            {filtered.length > 0 && totalPages > 1 && <span style={{ fontSize:12, color:T.grey400 }}>Page {txnPage} of {totalPages}</span>}
+          </div>
+          {filtered.length === 0 ? (
+            <div style={{ padding:"64px 20px", textAlign:"center" }}>
+              <div style={{ fontSize:40, marginBottom:12 }}>📭</div>
+              <div style={{ fontSize:15, fontWeight:700, color:T.black, marginBottom:6 }}>No transactions found</div>
+              <div style={{ fontSize:13, color:T.grey400 }}>Try adjusting your filters to see more results.</div>
+            </div>
+          ) : (
+            <div style={{ overflowX:"auto" }}>
+              <table style={{ width:"100%", borderCollapse:"collapse", minWidth:820 }}>
+                <thead>
+                  <tr>
+                    <th style={TXN_TH}>Date & Time</th>
+                    <th style={TXN_TH}>Description</th>
+                    <th style={TXN_TH}>Transaction ID</th>
+                    <th style={TXN_TH}>Payment Method</th>
+                    <th style={TXN_TH}>Currency</th>
+                    <th style={{ ...TXN_TH, textAlign:"right" }}>Amount</th>
+                    <th style={TXN_TH}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageRows.map(tx => {
+                    const isCredit = tx.raw >= 0;
+                    const pm = TXN_PM_COLORS[tx.method] || ["#F3F4F6","#374151"];
+                    const cd = TXN_CURR_META[tx.code] || {};
+                    return (
+                      <tr key={tx.id} onMouseEnter={e => e.currentTarget.style.background="#FAFAFA"} onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                        <td style={{ ...TXN_TD, whiteSpace:"nowrap", color:T.grey600, fontSize:12 }}>{fmtDt(tx.dt)}</td>
+                        <td style={{ ...TXN_TD, maxWidth:220 }}><div style={{ fontWeight:500 }}>{tx.desc}</div></td>
+                        <td style={TXN_TD}>
+                          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                            <span style={{ fontFamily:"monospace", fontSize:11, color:T.grey600 }}>{tx.id}</span>
+                            <button onClick={() => handleCopy(tx.id)}
+                              style={{ background:"none", border:`1px solid ${T.grey200}`, borderRadius:4, padding:"2px 6px", fontSize:10, cursor:"pointer", color: copiedId === tx.id ? T.greenText : T.grey400, fontFamily:T.font, whiteSpace:"nowrap", transition:"color 0.12s" }}>
+                              {copiedId === tx.id ? "✓ Copied" : "Copy"}
+                            </button>
+                          </div>
+                        </td>
+                        <td style={TXN_TD}>
+                          <span style={{ display:"inline-block", padding:"3px 9px", borderRadius:20, fontSize:11, fontWeight:600, background:pm[0], color:pm[1] }}>
+                            {TXN_PM_LABEL[tx.method] || tx.method}
+                          </span>
+                        </td>
+                        <td style={TXN_TD}>
+                          <span style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, whiteSpace:"nowrap" }}>
+                            <span>{cd.flag}</span>{tx.code}
+                          </span>
+                        </td>
+                        <td style={{ ...TXN_TD, textAlign:"right", fontWeight:700, fontSize:13, color: isCredit ? T.greenText : T.redErrText, whiteSpace:"nowrap" }}>
+                          {fmtAmt(tx)}
+                        </td>
+                        <td style={TXN_TD}><Pill label={tx.status} /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {totalPages > 1 && (
+            <div style={{ padding:"14px 18px", borderTop:`1px solid ${T.grey100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <button onClick={() => setTxnPage(p => Math.max(1, p - 1))} disabled={txnPage === 1}
+                style={{ padding:"7px 14px", fontSize:12, fontWeight:600, borderRadius:7, border:`1px solid ${T.grey200}`, background: txnPage === 1 ? T.grey50 : T.white, color: txnPage === 1 ? T.grey300 : T.black, cursor: txnPage === 1 ? "default" : "pointer", fontFamily:T.font }}>
+                ← Previous
+              </button>
+              <div style={{ display:"flex", gap:4 }}>
+                {Array.from({ length:totalPages }, (_, i) => i + 1).map(p => (
+                  <button key={p} onClick={() => setTxnPage(p)}
+                    style={{ width:32, height:32, borderRadius:7, border: p === txnPage ? "none" : `1px solid ${T.grey200}`, background: p === txnPage ? T.redPrimary : T.white, color: p === txnPage ? T.white : T.black, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:T.font }}>
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setTxnPage(p => Math.min(totalPages, p + 1))} disabled={txnPage === totalPages}
+                style={{ padding:"7px 14px", fontSize:12, fontWeight:600, borderRadius:7, border:`1px solid ${T.grey200}`, background: txnPage === totalPages ? T.grey50 : T.white, color: txnPage === totalPages ? T.grey300 : T.black, cursor: txnPage === totalPages ? "default" : "pointer", fontFamily:T.font }}>
+                Next →
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop:40 }}><Footer /></div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -1827,7 +2121,7 @@ function LandingScreen({ setPage, onNav, dummy, setDummy }) {
             <div style={{ padding:20, background:"#F8F9FF" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
                 <span style={{ fontSize:14, fontWeight:700, color:T.black }}>Your Wallets</span>
-                <span style={{ fontSize:12, color:T.redPrimary, fontWeight:600 }}>+ Add Currency</span>
+                <span style={{ fontSize:12, color:T.redPrimary, fontWeight:600 }}>+ Open New Currency Account</span>
               </div>
               {MOCKUP_WALLETS.map(w => (
                 <div key={w.code} style={{ background:T.white, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"center", gap:10, border:`1px solid ${T.grey100}`, marginBottom:8 }}>
@@ -2287,6 +2581,7 @@ export default function App() {
   const [dummy, setDummy] = useState(true);
   const [detailCurrency, setDetailCurrency] = useState(DUMMY_CURRENCIES[0]);
   const [settlementAccount, setSettlementAccount] = useState(null);
+  const [txnInitCurrency, setTxnInitCurrency] = useState(null);
 
   const handleSetPage = id => setPage(id === "dashboard" ? "dashboard_app" : id);
 
@@ -2295,18 +2590,24 @@ export default function App() {
     else setPage("landing");
   };
 
+  const handleViewTransactions = (currency = null) => {
+    setTxnInitCurrency(currency);
+    setPage("transactions");
+  };
+
   const renderPage = () => {
     switch (page) {
       case "landing":        return <LandingScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "setup":          return <SetupScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "initialising":   return <InitialisingScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
-      case "currency_detail":return <CurrencyDetailScreen cur={detailCurrency} setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} settlementAccount={settlementAccount} setSettlementAccount={setSettlementAccount} />;
+      case "currency_detail":return <CurrencyDetailScreen cur={detailCurrency} setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} settlementAccount={settlementAccount} setSettlementAccount={setSettlementAccount} onViewTransactions={handleViewTransactions} />;
       case "currencies":     return <CurrenciesScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} />;
       case "add_modal":      return <AddModalScreen setPage={handleSetPage} />;
       case "remove_modal":   return <RemoveModalScreen setPage={handleSetPage} cur={detailCurrency} />;
+      case "transactions":   return <TransactionsScreen setPage={handleSetPage} onNav={handleNav} dummy={dummy} setDummy={setDummy} initCurrency={txnInitCurrency} />;
       case "dashboard_app":
       default:
-        return <DashboardAppScreen setPage={handleSetPage} setDetailCurrency={setDetailCurrency} onNav={handleNav} dummy={dummy} setDummy={setDummy} settlementAccount={settlementAccount} setSettlementAccount={setSettlementAccount} />;
+        return <DashboardAppScreen setPage={handleSetPage} setDetailCurrency={setDetailCurrency} onNav={handleNav} dummy={dummy} setDummy={setDummy} settlementAccount={settlementAccount} setSettlementAccount={setSettlementAccount} onViewTransactions={handleViewTransactions} />;
     }
   };
 
