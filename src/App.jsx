@@ -2390,24 +2390,6 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
   const [msaStatus, setMsaStatus] = useState("pending"); // pending | sent | signed
   const [msaSubScreen, setMsaSubScreen] = useState(null); // null | "form" | "tracking" | "edit"
   const [showMSAViewer, setShowMSAViewer] = useState(false);
-  const [processingDone, setProcessingDone] = useState(false);
-
-  // Inject spinner keyframe once
-  useEffect(() => {
-    if (document.getElementById("peko-spin-kf")) return;
-    const s = document.createElement("style");
-    s.id = "peko-spin-kf";
-    s.textContent = "@keyframes pekoSpin { to { transform: rotate(360deg); } }";
-    document.head.appendChild(s);
-  }, []);
-
-  // Auto-complete processing after 3 s
-  useEffect(() => {
-    if (msaSubScreen !== "processing") return;
-    setProcessingDone(false);
-    const t = setTimeout(() => setProcessingDone(true), 3000);
-    return () => clearTimeout(t);
-  }, [msaSubScreen]);
   const [signerName, setSignerName] = useState("");
   const [signerEmail, setSignerEmail] = useState("");
   const [signerNameErr, setSignerNameErr] = useState(false);
@@ -2436,27 +2418,6 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
         );
       })}
     </div>
-  );
-
-  if (msaSubScreen === "processing") return (
-    <AppShell activePage="setup" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
-      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:`calc(100vh - ${T.topbarH}px)`, padding:"40px 24px", textAlign:"center" }}>
-        {!processingDone ? (
-          <>
-            <div style={{ width:64, height:64, borderRadius:"50%", border:`6px solid ${T.grey100}`, borderTopColor:T.redPrimary, animation:"pekoSpin 0.8s linear infinite", marginBottom:28 }} />
-            <div style={{ fontSize:22, fontWeight:800, color:T.black, marginBottom:10 }}>Initializing Your Multi-Currency Account</div>
-            <div style={{ fontSize:14, color:T.grey400, maxWidth:420, lineHeight:1.65 }}>Please wait while we process your request. This may take a few moments.</div>
-          </>
-        ) : (
-          <>
-            <div style={{ width:80, height:80, borderRadius:"50%", background:T.greenBg, border:`2px solid ${T.greenBorder}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, marginBottom:24 }}>✓</div>
-            <div style={{ fontSize:24, fontWeight:800, color:T.black, marginBottom:10 }}>Multi-Currency Account Successfully Activated</div>
-            <div style={{ fontSize:14, color:T.grey400, marginBottom:32, maxWidth:420, lineHeight:1.65 }}>Your account is now active and ready to use.</div>
-            <BtnPrimary onClick={() => setPage("dashboard_app")} style={{ padding:"13px 32px", fontSize:15 }}>Go to Accounts →</BtnPrimary>
-          </>
-        )}
-      </div>
-    </AppShell>
   );
 
   return (
@@ -2643,7 +2604,7 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
             <div style={{ display:"flex", gap:10 }}>
               <BtnSecondary onClick={() => setMsaSubScreen(null)} style={{ flex:1, padding:"12px" }}>Go Back</BtnSecondary>
               {msaStatus === "signed" ? (
-                <BtnPrimary onClick={() => setMsaSubScreen("processing")} style={{ flex:1, padding:"12px" }}>Submit Request →</BtnPrimary>
+                <BtnPrimary onClick={() => setPage("initialising")} style={{ flex:1, padding:"12px" }}>Submit Request →</BtnPrimary>
               ) : (
                 <BtnPrimary onClick={() => setMsaSubScreen("edit")} style={{ flex:1, padding:"12px" }}>Edit eSign Info</BtnPrimary>
               )}
@@ -2748,7 +2709,7 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
             <div style={{ display:"flex", gap:10 }}>
               <BtnSecondary onClick={() => setStep(2)} style={{ flex:1, padding:"12px" }}>← Back</BtnSecondary>
               <BtnPrimary
-                onClick={() => { if (msaStatus === "signed") setMsaSubScreen("processing"); }}
+                onClick={() => { if (msaStatus === "signed") setPage("initialising"); }}
                 style={{ flex:1, padding:"12px", opacity: msaStatus === "signed" ? 1 : 0.4, cursor: msaStatus === "signed" ? "pointer" : "not-allowed" }}
               >
                 Submit Request →
