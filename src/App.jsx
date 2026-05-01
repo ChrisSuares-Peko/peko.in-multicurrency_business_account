@@ -2425,7 +2425,7 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
       <div style={{ maxWidth:560, margin:"0 auto", padding:"48px 24px" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32 }}>
           <SetupStepper />
-          <BtnSecondary onClick={() => setPage("landing")} style={{ fontSize:13, padding:"8px 16px" }}>Exit</BtnSecondary>
+          <BtnSecondary onClick={() => { if (step === 1) setPage("dashboard_app"); else setStep(step - 1); }} style={{ fontSize:13, padding:"8px 16px" }}>← Back</BtnSecondary>
         </div>
 
         {step === 1 ? (
