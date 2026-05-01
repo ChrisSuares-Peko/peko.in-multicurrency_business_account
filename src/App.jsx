@@ -2390,6 +2390,24 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
   const [msaStatus, setMsaStatus] = useState("pending"); // pending | sent | signed
   const [msaSubScreen, setMsaSubScreen] = useState(null); // null | "form" | "tracking" | "edit"
   const [showMSAViewer, setShowMSAViewer] = useState(false);
+  const [processingDone, setProcessingDone] = useState(false);
+
+  // Inject spinner keyframe once
+  useEffect(() => {
+    if (document.getElementById("peko-spin-kf")) return;
+    const s = document.createElement("style");
+    s.id = "peko-spin-kf";
+    s.textContent = "@keyframes pekoSpin { to { transform: rotate(360deg); } }";
+    document.head.appendChild(s);
+  }, []);
+
+  // Auto-complete processing after 3 s
+  useEffect(() => {
+    if (msaSubScreen !== "processing") return;
+    setProcessingDone(false);
+    const t = setTimeout(() => setProcessingDone(true), 3000);
+    return () => clearTimeout(t);
+  }, [msaSubScreen]);
   const [signerName, setSignerName] = useState("");
   const [signerEmail, setSignerEmail] = useState("");
   const [signerNameErr, setSignerNameErr] = useState(false);
@@ -2418,6 +2436,27 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
         );
       })}
     </div>
+  );
+
+  if (msaSubScreen === "processing") return (
+    <AppShell activePage="setup" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:`calc(100vh - ${T.topbarH}px)`, padding:"40px 24px", textAlign:"center" }}>
+        {!processingDone ? (
+          <>
+            <div style={{ width:64, height:64, borderRadius:"50%", border:`6px solid ${T.grey100}`, borderTopColor:T.redPrimary, animation:"pekoSpin 0.8s linear infinite", marginBottom:28 }} />
+            <div style={{ fontSize:22, fontWeight:800, color:T.black, marginBottom:10 }}>Initializing Your Multi-Currency Account</div>
+            <div style={{ fontSize:14, color:T.grey400, maxWidth:420, lineHeight:1.65 }}>Please wait while we process your request. This may take a few moments.</div>
+          </>
+        ) : (
+          <>
+            <div style={{ width:80, height:80, borderRadius:"50%", background:T.greenBg, border:`2px solid ${T.greenBorder}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, marginBottom:24 }}>✓</div>
+            <div style={{ fontSize:24, fontWeight:800, color:T.black, marginBottom:10 }}>Multi-Currency Account Successfully Activated</div>
+            <div style={{ fontSize:14, color:T.grey400, marginBottom:32, maxWidth:420, lineHeight:1.65 }}>Your account is now active and ready to use.</div>
+            <BtnPrimary onClick={() => setPage("dashboard_app")} style={{ padding:"13px 32px", fontSize:15 }}>Go to Accounts →</BtnPrimary>
+          </>
+        )}
+      </div>
+    </AppShell>
   );
 
   return (
@@ -2493,7 +2532,6 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
               <div style={{ width:40, height:48, borderRadius:6, background:"#FEE2E2", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:20 }}>📄</div>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:14, fontWeight:700, color:T.black }}>Master Service Agreement</div>
-                <div style={{ fontSize:12, color:T.grey400, marginTop:2 }}>Decfin_IFSC_MSA_Template.pdf · 20 pages</div>
               </div>
               <span style={{ background:"#FEE2E2", color:"#DC2626", borderRadius:6, padding:"3px 10px", fontSize:11, fontWeight:700, letterSpacing:0.3, flexShrink:0 }}>PDF</span>
               <div style={{ display:"flex", gap:6, flexShrink:0 }}>
@@ -2604,7 +2642,11 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
 
             <div style={{ display:"flex", gap:10 }}>
               <BtnSecondary onClick={() => setMsaSubScreen(null)} style={{ flex:1, padding:"12px" }}>Go Back</BtnSecondary>
-              <BtnPrimary onClick={() => setMsaSubScreen("edit")} style={{ flex:1, padding:"12px" }}>Edit eSign Info</BtnPrimary>
+              {msaStatus === "signed" ? (
+                <BtnPrimary onClick={() => setMsaSubScreen("processing")} style={{ flex:1, padding:"12px" }}>Submit Request →</BtnPrimary>
+              ) : (
+                <BtnPrimary onClick={() => setMsaSubScreen("edit")} style={{ flex:1, padding:"12px" }}>Edit eSign Info</BtnPrimary>
+              )}
             </div>
           </div>
 
@@ -2672,8 +2714,7 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
                 <div style={{ display:"flex", alignItems:"flex-start", gap:14, marginBottom: msaStatus === "signed" ? 20 : 0 }}>
                   <div style={{ width:44, height:52, borderRadius:6, background:"#FEE2E2", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:22 }}>📄</div>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:14, fontWeight:700, color:T.black, marginBottom:3 }}>Decfin_IFSC_MSA_Template.pdf</div>
-                    <div style={{ fontSize:12, color:T.grey400 }}>Master Services Agreement · 20 pages</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:T.black }}>Master Services Agreement</div>
                   </div>
                   {msaStatus === "signed" && <span style={{ background:T.greenBg, color:T.greenText, border:`1px solid ${T.greenBorder}`, borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>✓ Signed</span>}
                   {(msaStatus === "pending" || msaStatus === "sent") && <span style={{ background:T.amberBg, color:T.amberText, border:`1px solid ${T.amberBorder}`, borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Awaiting signature</span>}
@@ -2707,7 +2748,7 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
             <div style={{ display:"flex", gap:10 }}>
               <BtnSecondary onClick={() => setStep(2)} style={{ flex:1, padding:"12px" }}>← Back</BtnSecondary>
               <BtnPrimary
-                onClick={() => { if (msaStatus === "signed") setPage("initialising"); }}
+                onClick={() => { if (msaStatus === "signed") setMsaSubScreen("processing"); }}
                 style={{ flex:1, padding:"12px", opacity: msaStatus === "signed" ? 1 : 0.4, cursor: msaStatus === "signed" ? "pointer" : "not-allowed" }}
               >
                 Submit Request →
