@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect } from "react";
+import { useState, useContext, createContext, useEffect, useRef } from "react";
 const DummyCtx = createContext(false);
 const useDummy = () => useContext(DummyCtx);
 
@@ -2043,6 +2043,182 @@ function TransactionsScreen({ setPage, onNav, dummy, setDummy, initCurrency }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   MSA VIEWER MODAL
+═══════════════════════════════════════════════════════════ */
+const MSA_CONTENT = [
+  { head: null }, // page 1 = cover — special rendering
+  { head: "1. DEFINITIONS AND INTERPRETATION", body: `1.1 "Account" means any multi-currency account opened by Customer pursuant to this Agreement.\n\n1.2 "Applicable Law" means all statutes, regulations, orders, and guidelines applicable to the Services, including the IFSCA Act 2019, FEMA 1999, PMLA 2002, and all applicable RBI guidelines.\n\n1.3 "Business Day" means any day other than a Saturday, Sunday, or public holiday in India or in the jurisdiction of the relevant currency.\n\n1.4 "Confidential Information" means information disclosed by one party to the other that is designated as confidential or should reasonably be understood as such.\n\n1.5 "Customer Data" means all data and information submitted by Customer to Service Provider in connection with the Services.\n\n1.6 "Fees" means the charges payable by Customer as set out in Schedule 2 to this Agreement.\n\n1.7 "Services" means the multi-currency banking and payment services described in Schedule 1.` },
+  { head: "2. SERVICES", body: `2.1 Provision of Services. Subject to the terms of this Agreement and payment of applicable Fees, Service Provider shall provide the Services described in Schedule 1 following completion of the account onboarding process.\n\n2.2 Account Opening. Customer may open multi-currency accounts in currencies approved by Service Provider, subject to completion of all KYC and AML requirements.\n\n2.3 Account Operations. Customer may receive funds, hold balances, and make payments from its Accounts in accordance with this Agreement and Service Provider's transaction policies.\n\n2.4 Correspondent Banking. Service Provider uses correspondent banking to facilitate international payments. Service Provider shall not be liable for delays caused by correspondent banks acting in accordance with their own policies.` },
+  { head: "2. SERVICES (CONTINUED)", body: `2.5 Transaction Limits. Service Provider may impose limits on transaction amounts, frequency, and types. Limits may be updated upon notice to Customer.\n\n2.6 Service Availability. Service Provider will use commercially reasonable efforts to ensure availability. Scheduled maintenance or circumstances beyond its control may result in temporary unavailability.\n\n2.7 Compliance. Both parties agree to comply with all Applicable Laws. Customer agrees to provide all documentation reasonably requested for compliance purposes.\n\n2.8 Changes to Services. Service Provider may modify the Services upon thirty (30) days' prior written notice. Material changes that adversely affect Customer entitle Customer to terminate without penalty.` },
+  { head: "3. FEES AND PAYMENT", body: `3.1 Fees. Customer agrees to pay the fees set forth in Schedule 2. Service Provider may update fees upon thirty (30) days' prior written notice.\n\n3.2 Currency of Fees. All fees shall be payable in Indian Rupees (INR) unless otherwise specified. Service Provider may deduct fees directly from Customer Account balances.\n\n3.3 Taxes. Customer is responsible for all taxes and duties imposed on the Services, excluding taxes on Service Provider's net income.\n\n3.4 Late Payments. Unpaid fees shall accrue interest at 1.5% per month or the maximum rate permitted by law, whichever is lower.\n\n3.5 Disputes. Customer must notify Service Provider within thirty (30) days of an invoice to dispute any amount. Failure to do so constitutes acceptance.` },
+  { head: "4. TERM AND TERMINATION", body: `4.1 Term. This Agreement commences on the Effective Date and continues for an initial term of one (1) year, renewing automatically for successive one-year periods unless either party provides sixty (60) days' written notice of non-renewal.\n\n4.2 Termination for Convenience. Either party may terminate upon sixty (60) days' prior written notice.\n\n4.3 Termination for Cause. Either party may terminate immediately if the other materially breaches and fails to cure within thirty (30) days of notice, or becomes insolvent.\n\n4.4 Effect of Termination. Upon termination: Customer shall cease using the Services; Service Provider shall close Accounts and return remaining balances; all licenses shall terminate.` },
+  { head: "5. CONFIDENTIALITY", body: `5.1 Each party agrees to maintain in strict confidence all Confidential Information of the other party, not to disclose it to third parties without prior written consent, and to use it solely for the purposes of this Agreement.\n\n5.2 Exceptions. Confidentiality obligations do not apply to information that: is or becomes publicly available without breach; was already known to the receiving party; is received from a third party without restriction; or is independently developed without use of Confidential Information.\n\n5.3 Regulatory Disclosure. A party may disclose Confidential Information to the extent required by law, regulation, or court order, provided it gives the other party prompt prior written notice to the extent permitted.` },
+  { head: "6. DATA PROTECTION AND PRIVACY", body: `6.1 Customer Data. Service Provider will process Customer Data only as necessary to provide the Services and in accordance with applicable data protection laws.\n\n6.2 Security. Service Provider will implement appropriate technical and organizational measures to protect Customer Data against unauthorized access, disclosure, alteration, or destruction.\n\n6.3 Breach Notification. Service Provider will notify Customer without undue delay upon becoming aware of a security breach affecting Customer Data.\n\n6.4 Data Retention. Service Provider will retain Customer Data for the period required by Applicable Law and will thereafter securely delete or anonymize such data.\n\n6.5 Customer Obligations. Customer is responsible for ensuring its use of the Services and data it provides complies with all applicable data protection laws.` },
+  { head: "7. INTELLECTUAL PROPERTY", body: `7.1 Service Provider's IP. All intellectual property in and to the Services — including software, technology, processes, and documentation — is owned by Service Provider or its licensors. Nothing herein grants Customer any ownership interest.\n\n7.2 Customer's IP. All intellectual property in Customer Data is owned by Customer. Customer grants Service Provider a limited license to use Customer Data solely as necessary to provide the Services.\n\n7.3 Feedback. Service Provider may freely use any feedback, suggestions, or recommendations provided by Customer regarding the Services without restriction or obligation.\n\n7.4 Restrictions. Customer shall not reverse engineer, decompile, or otherwise attempt to derive source code from any software used in connection with the Services.` },
+  { head: "8. REPRESENTATIONS AND WARRANTIES", body: `8.1 Mutual. Each party represents that: it is duly organized and validly existing; it has authority to enter into this Agreement; this Agreement constitutes a valid and binding obligation; and its execution does not violate any applicable laws or other agreements.\n\n8.2 Service Provider Warranties. Service Provider warrants that it holds all necessary licenses and regulatory approvals to provide the Services; Services will be provided in a professional manner; and it will comply with all Applicable Laws.\n\n8.3 Customer Warranties. Customer warrants that it will use the Services only for lawful purposes; all information provided is accurate and complete; and it will comply with all Applicable Laws.` },
+  { head: "9. LIMITATION OF LIABILITY", body: `9.1 Exclusion of Consequential Damages. TO THE MAXIMUM EXTENT PERMITTED BY LAW, NEITHER PARTY SHALL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF DATA, OR LOSS OF BUSINESS OPPORTUNITIES.\n\n9.2 Aggregate Cap. SERVICE PROVIDER'S TOTAL AGGREGATE LIABILITY SHALL NOT EXCEED THE TOTAL FEES PAID BY CUSTOMER IN THE THREE (3) MONTHS PRECEDING THE EVENT GIVING RISE TO SUCH LIABILITY.\n\n9.3 Essential Basis. The parties acknowledge that these limitations reflect a reasonable allocation of risk and are an essential element of the basis of the bargain between them.` },
+  { head: "10. INDEMNIFICATION", body: `10.1 Customer Indemnification. Customer shall indemnify and hold Service Provider harmless from all claims, damages, losses, costs, and expenses (including legal fees) arising from: Customer's breach; Customer's violation of Applicable Law; any third-party claim from Customer's use of the Services; or inaccurate information provided by Customer.\n\n10.2 Service Provider Indemnification. Service Provider shall indemnify Customer from claims arising from: Service Provider's material breach; Service Provider's gross negligence or willful misconduct; or any claim that the Services infringe third-party intellectual property rights.\n\n10.3 Procedure. The indemnified party must promptly notify the indemnifying party and reasonably cooperate in the defense of any claim.` },
+  { head: "11. COMPLIANCE AND REGULATORY", body: `11.1 Regulatory Framework. Service Provider operates under the International Financial Services Centres Authority (IFSCA) Act, 2019 and all applicable rules and guidelines issued thereunder.\n\n11.2 KYC and AML. Customer agrees to comply with all KYC and AML requirements as stipulated by Service Provider and Applicable Law. Customer authorizes Service Provider to conduct ongoing due diligence checks as required.\n\n11.3 Sanctions. Customer represents it is not a restricted person under any applicable sanctions regime and agrees not to use the Services for any purpose that would violate applicable sanctions laws.\n\n11.4 Reporting. Customer acknowledges that Service Provider may be required to report certain transactions to regulatory authorities and agrees to cooperate fully with such reporting obligations.` },
+  { head: "12. FORCE MAJEURE", body: `12.1 Neither party shall be liable for failure or delay caused by circumstances beyond its reasonable control, including acts of God, natural disasters, war, terrorism, epidemic or pandemic, governmental actions, power failures, or internet service disruptions.\n\n12.2 A party claiming force majeure shall promptly notify the other party, specifying the nature of the event, expected duration, and steps being taken to address the situation.\n\n12.3 If a force majeure event continues for more than ninety (90) days, either party may terminate this Agreement upon written notice without further liability, except for obligations accrued prior to the event.` },
+  { head: "13. DISPUTE RESOLUTION", body: `13.1 Informal Resolution. The parties shall first attempt to resolve any dispute through good-faith negotiation between senior representatives within thirty (30) days of written notice of a dispute.\n\n13.2 Arbitration. If negotiation fails, the dispute shall be referred to binding arbitration under the rules of the Indian Council of Arbitration. Arbitration shall take place in Ahmedabad, Gujarat. Language shall be English. The award shall be final and binding on both parties.\n\n13.3 Governing Law. This Agreement is governed by the laws of India. Subject to the arbitration clause, the courts of Ahmedabad, Gujarat shall have exclusive jurisdiction.` },
+  { head: "14. ASSIGNMENT", body: `14.1 Customer Assignment. Customer may not assign this Agreement without Service Provider's prior written consent, which shall not be unreasonably withheld.\n\n14.2 Service Provider Assignment. Service Provider may assign to an affiliate or in connection with a merger or sale of substantially all of its assets, provided Customer receives written notice.\n\n14.3 Notices. All notices shall be in writing and delivered by personal delivery, overnight courier, or email. Notices are deemed delivered upon personal delivery, one Business Day after courier, or upon confirmed receipt of email.\n\n14.4 Binding Effect. This Agreement shall be binding upon and inure to the benefit of both parties and their respective permitted successors and assigns.` },
+  { head: "15. AMENDMENTS AND WAIVERS", body: `15.1 Amendments by Service Provider. Service Provider may amend this Agreement upon thirty (30) days' prior written notice. Material changes that adversely affect Customer shall include a description of the change and its effective date.\n\n15.2 Customer Acceptance. Continued use of the Services after the notice period constitutes acceptance. If Customer does not accept a material amendment, it may terminate without penalty before the effective date.\n\n15.3 No Oral Modifications. No oral modification or waiver of any term is effective. All modifications must be in writing.\n\n15.4 No Waiver. Failure to exercise any right does not constitute a waiver. No single exercise of any right precludes any other or further exercise.` },
+  { head: "16. GENERAL PROVISIONS", body: `16.1 Severability. If any provision is held invalid or unenforceable, the remaining provisions continue in full force and effect.\n\n16.2 Entire Agreement. This Agreement, together with its Schedules, constitutes the entire agreement between the parties and supersedes all prior negotiations, representations, and understandings.\n\n16.3 Counterparts. This Agreement may be executed in counterparts. Electronic signatures are legally valid and binding in accordance with the Information Technology Act, 2000 and its amendments.\n\n16.4 Language. This Agreement is in English. In the event of any conflict with a translation, the English version shall prevail.\n\n16.5 Headings. Section headings are for convenience only and do not affect interpretation.` },
+  { head: "SCHEDULE 1 — SERVICES DESCRIPTION", body: `The following services are provided by DecFin Fintech Services IFSC Private Limited:\n\n1. MULTI-CURRENCY ACCOUNTS\n   Opening and maintenance of accounts in USD, EUR, GBP, AUD, SGD, HKD and other approved currencies. Real-time balance visibility and transaction reporting.\n\n2. PAYMENT SERVICES\n   International wire transfers (SWIFT). Local payment schemes: ACH (USD), SEPA (EUR), Faster Payments (GBP), FAST (SGD). Beneficiary management, payment scheduling, and transaction status tracking.\n\n3. FOREIGN EXCHANGE\n   Spot FX conversions between supported currencies at competitive rates with transparent fee disclosure.\n\n4. REPORTING AND API\n   Real-time notifications, monthly statements, API access for automated reconciliation, and custom reports on request.` },
+  { head: "SIGNATURE PAGE", body: `This Master Services Agreement is entered into as of the date of the last signature below.\n\nDECFIN FINTECH SERVICES IFSC PRIVATE LIMITED\n\nBy: ___________________________\nName: _________________________\nTitle: Chief Executive Officer\nDate: __________________________\n\n\nCUSTOMER ENTITY\n\nBy: ___________________________\nName: _________________________\nTitle: __________________________\nDate: __________________________\n\n\n─────────────────────────────────────\nELECTRONIC SIGNATURE ACKNOWLEDGMENT\n\nBy electronically signing this Agreement, each signatory acknowledges having read and understood the Agreement in full, having authority to bind the respective entity, and that the electronic signature is legally binding under the Information Technology Act, 2000.` },
+];
+
+function MSAViewerModal({ onClose }) {
+  const [zoom, setZoom] = useState(100);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [editingPage, setEditingPage] = useState(false);
+  const [pageInput, setPageInput] = useState("1");
+  const scrollRef = useRef(null);
+  const pageRefs = useRef([]);
+  const TOTAL_PAGES = MSA_CONTENT.length;
+
+  const changeZoom = delta => setZoom(z => Math.min(200, Math.max(50, z + delta)));
+
+  const goToPage = n => {
+    const p = Math.min(TOTAL_PAGES, Math.max(1, Number(n) || 1));
+    setCurrentPage(p);
+    setPageInput(String(p));
+    const el = pageRefs.current[p - 1];
+    if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+  };
+
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = "/Decfin_IFSC_MSA_Template.pdf";
+    a.download = "Decfin_IFSC_MSA_Template.pdf";
+    a.click();
+  };
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const track = () => {
+      const cTop = container.getBoundingClientRect().top;
+      let nearest = 0, nearestDist = Infinity;
+      pageRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const d = Math.abs(el.getBoundingClientRect().top - cTop - 40);
+        if (d < nearestDist) { nearestDist = d; nearest = i; }
+      });
+      setCurrentPage(nearest + 1);
+      setPageInput(String(nearest + 1));
+    };
+    container.addEventListener("scroll", track, { passive:true });
+    return () => container.removeEventListener("scroll", track);
+  }, []);
+
+  const tbBtn = (extra = {}) => ({
+    padding:"4px 10px", borderRadius:6, border:`1px solid ${T.grey200}`,
+    background:T.white, cursor:"pointer", fontFamily:T.font, fontSize:13, ...extra,
+  });
+
+  return (
+    <div onClick={e => e.target === e.currentTarget && onClose()}
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.72)", zIndex:800, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ width:"80vw", height:"85vh", background:T.white, borderRadius:14, display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 16px 64px rgba(0,0,0,0.4)" }}>
+
+        {/* Header */}
+        <div style={{ padding:"13px 20px", borderBottom:`1px solid ${T.grey200}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ fontSize:18 }}>📄</span>
+            <span style={{ fontSize:15, fontWeight:700, color:T.black }}>Master Service Agreement</span>
+            <span style={{ background:"#FEE2E2", color:"#DC2626", borderRadius:5, padding:"2px 8px", fontSize:11, fontWeight:700 }}>PDF</span>
+          </div>
+          <button onClick={onClose} style={{ border:"none", background:"none", cursor:"pointer", fontSize:22, color:T.grey400, lineHeight:1, padding:4 }}>×</button>
+        </div>
+
+        {/* Toolbar */}
+        <div style={{ padding:"8px 16px", borderBottom:`1px solid ${T.grey100}`, background:T.grey50, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+          {/* Page navigation */}
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <button style={tbBtn({ color: currentPage === 1 ? T.grey300 : T.black, cursor: currentPage === 1 ? "default" : "pointer" })}
+              onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>←</button>
+            <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:13, color:T.grey600 }}>
+              <span>Page</span>
+              {editingPage ? (
+                <input autoFocus value={pageInput}
+                  onChange={e => setPageInput(e.target.value)}
+                  onBlur={() => { setEditingPage(false); goToPage(pageInput); }}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") { setEditingPage(false); goToPage(pageInput); }
+                    else if (e.key === "Escape") { setEditingPage(false); setPageInput(String(currentPage)); }
+                  }}
+                  style={{ width:36, padding:"2px 4px", border:`1.5px solid ${T.redPrimary}`, borderRadius:4, fontSize:13, fontFamily:T.font, textAlign:"center", outline:"none" }} />
+              ) : (
+                <span onClick={() => { setEditingPage(true); setPageInput(String(currentPage)); }}
+                  style={{ minWidth:28, padding:"2px 6px", borderRadius:4, border:`1px solid ${T.grey200}`, background:T.white, textAlign:"center", cursor:"text", fontWeight:600, color:T.black }}>
+                  {currentPage}
+                </span>
+              )}
+              <span>of {TOTAL_PAGES}</span>
+            </div>
+            <button style={tbBtn({ color: currentPage === TOTAL_PAGES ? T.grey300 : T.black, cursor: currentPage === TOTAL_PAGES ? "default" : "pointer" })}
+              onClick={() => goToPage(currentPage + 1)} disabled={currentPage === TOTAL_PAGES}>→</button>
+          </div>
+
+          {/* Zoom + download */}
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <button style={tbBtn({ color: zoom <= 50 ? T.grey300 : T.black, cursor: zoom <= 50 ? "default" : "pointer", fontWeight:700 })}
+              onClick={() => changeZoom(-25)} disabled={zoom <= 50}>−</button>
+            <span style={{ fontSize:12, fontWeight:600, color:T.grey600, minWidth:42, textAlign:"center" }}>{zoom}%</span>
+            <button style={tbBtn({ color: zoom >= 200 ? T.grey300 : T.black, cursor: zoom >= 200 ? "default" : "pointer", fontWeight:700 })}
+              onClick={() => changeZoom(25)} disabled={zoom >= 200}>+</button>
+            <button style={tbBtn({ fontSize:11, fontWeight:600, color:T.grey600, whiteSpace:"nowrap" })} onClick={() => setZoom(100)}>Fit Width</button>
+            <div style={{ width:1, height:20, background:T.grey200 }} />
+            <button style={tbBtn({ color:T.grey600 })} onClick={handleDownload} title="Download PDF">⬇</button>
+          </div>
+        </div>
+
+        {/* Page content area */}
+        <div ref={scrollRef} style={{ flex:1, overflowY:"auto", overflowX:"auto", background:"#525252", padding:"24px 0" }}>
+          {MSA_CONTENT.map((pg, i) => (
+            <div key={i} ref={el => { pageRefs.current[i] = el; }}
+              style={{ width:(680 * zoom/100) + "px", minHeight:(960 * zoom/100) + "px", background:T.white, boxShadow:"0 2px 10px rgba(0,0,0,0.35)", margin:"0 auto 20px", padding:`${52*zoom/100}px ${64*zoom/100}px`, boxSizing:"border-box", position:"relative" }}>
+
+              {/* Page number footer */}
+              <div style={{ position:"absolute", bottom:24*zoom/100, left:0, right:0, textAlign:"center", fontSize:10*zoom/100, color:T.grey300 }}>— {i+1} —</div>
+
+              {i === 0 ? (
+                /* Cover page */
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:(820*zoom/100)+"px", textAlign:"center", gap:16*zoom/100, fontFamily:"Georgia,serif" }}>
+                  <div style={{ fontSize:9*zoom/100, letterSpacing:3*zoom/100, color:T.grey400, fontFamily:T.font, textTransform:"uppercase" }}>CONFIDENTIAL</div>
+                  <div style={{ width:52*zoom/100, height:2*zoom/100, background:"#DC2626" }} />
+                  <div style={{ fontSize:20*zoom/100, fontWeight:700, color:"#111", letterSpacing:0.5*zoom/100 }}>MASTER SERVICES AGREEMENT</div>
+                  <div style={{ fontSize:11*zoom/100, color:T.grey400, marginTop:4*zoom/100 }}>Between</div>
+                  <div style={{ fontSize:14*zoom/100, fontWeight:700, color:"#111" }}>DecFin Fintech Services IFSC Private Limited</div>
+                  <div style={{ fontSize:11*zoom/100, color:T.grey400 }}>AND</div>
+                  <div style={{ fontSize:14*zoom/100, fontWeight:700, color:"#111" }}>Customer Entity (as defined herein)</div>
+                  <div style={{ width:52*zoom/100, height:2*zoom/100, background:"#DC2626", marginTop:16*zoom/100 }} />
+                  <div style={{ fontSize:10*zoom/100, color:T.grey400, marginTop:8*zoom/100 }}>GIFT City, Gandhinagar, Gujarat — India</div>
+                </div>
+              ) : (
+                <div style={{ fontFamily:"Georgia,'Times New Roman',serif", fontSize:11.5*zoom/100, lineHeight:1.75, color:"#1A1A1A" }}>
+                  <div style={{ fontSize:12*zoom/100, fontWeight:700, fontFamily:T.font, marginBottom:14*zoom/100, paddingBottom:8*zoom/100, borderBottom:`1.5px solid #E5E7EB`, color:"#111827" }}>
+                    {pg.head}
+                  </div>
+                  <div style={{ whiteSpace:"pre-wrap" }}>{pg.body}</div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding:"12px 20px", borderTop:`1px solid ${T.grey100}`, display:"flex", gap:8, justifyContent:"flex-end", flexShrink:0 }}>
+          <BtnSecondary onClick={onClose} style={{ fontSize:13, padding:"9px 20px" }}>Close</BtnSecondary>
+          <BtnPrimary onClick={handleDownload} style={{ fontSize:13, padding:"9px 20px" }}>⬇ Download PDF</BtnPrimary>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    LANDING SCREEN
 ═══════════════════════════════════════════════════════════ */
 const LANDING_CURRENCIES = [
@@ -2211,7 +2387,15 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
   const [bizEmail, setBizEmail] = useState("finance@sigmadt3.com");
   const [phone, setPhone] = useState("+971 50 123 4567");
   const [selected, setSelected] = useState(new Set(["USD","GBP","EUR"]));
-  const [msaStatus, setMsaStatus] = useState("pending"); // pending | signing | signed | error
+  const [msaStatus, setMsaStatus] = useState("pending"); // pending | sent | signed
+  const [msaSubScreen, setMsaSubScreen] = useState(null); // null | "form" | "tracking" | "edit"
+  const [showMSAViewer, setShowMSAViewer] = useState(false);
+  const [signerName, setSignerName] = useState("");
+  const [signerEmail, setSignerEmail] = useState("");
+  const [signerNameErr, setSignerNameErr] = useState(false);
+  const [signerEmailErr, setSignerEmailErr] = useState(false);
+  const [msaSentAt, setMsaSentAt] = useState(null);
+  const [signedAt, setSignedAt] = useState(null);
 
   const toggleCurrency = code => setSelected(prev => { const n = new Set(prev); n.has(code) ? n.delete(code) : n.add(code); return n; });
   const popular = SETUP_CURRENCY_ROWS.filter(r => r.group === "popular");
@@ -2235,12 +2419,6 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
       })}
     </div>
   );
-
-  const handleESign = () => {
-    setMsaStatus("signing");
-    // Simulate eSign provider flow (replace setTimeout with DocuSign/Digio/SignDesk SDK call)
-    setTimeout(() => setMsaStatus("signed"), 2200);
-  };
 
   return (
     <AppShell activePage="setup" onNav={onNav} setPage={setPage} dummy={dummy} setDummy={setDummy}>
@@ -2302,7 +2480,187 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
             </div>
           </div>
 
+        ) : msaSubScreen === "form" ? (
+
+          /* ── Screen 1: Acknowledgement & Signer Info ── */
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 3 of 3</div>
+            <h2 style={{ fontSize:21, fontWeight:800, color:T.black, margin:"0 0 8px" }}>Master Services Agreement Acknowledgement and E-signing</h2>
+            <p style={{ fontSize:14, color:T.grey400, margin:"0 0 20px", lineHeight:1.6 }}>An agreement will be sent to the signer's email ID for electronic signature to complete the Multi-Currency account activation.</p>
+
+            {/* Document card */}
+            <div style={{ background:T.white, borderRadius:10, border:`1px solid ${T.grey200}`, padding:"14px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:12 }}>
+              <div style={{ width:40, height:48, borderRadius:6, background:"#FEE2E2", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:20 }}>📄</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:14, fontWeight:700, color:T.black }}>Master Service Agreement</div>
+                <div style={{ fontSize:12, color:T.grey400, marginTop:2 }}>Decfin_IFSC_MSA_Template.pdf · 20 pages</div>
+              </div>
+              <span style={{ background:"#FEE2E2", color:"#DC2626", borderRadius:6, padding:"3px 10px", fontSize:11, fontWeight:700, letterSpacing:0.3, flexShrink:0 }}>PDF</span>
+              <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+                <button onClick={() => setShowMSAViewer(true)}
+                  style={{ padding:"6px 12px", fontSize:12, fontWeight:600, borderRadius:6, border:`1px solid ${T.grey200}`, background:T.white, color:T.grey600, cursor:"pointer", fontFamily:T.font }}>
+                  View
+                </button>
+                <button onClick={() => { const a = document.createElement("a"); a.href="/Decfin_IFSC_MSA_Template.pdf"; a.download="Decfin_IFSC_MSA_Template.pdf"; a.click(); }}
+                  style={{ padding:"6px 12px", fontSize:12, fontWeight:600, borderRadius:6, border:`1px solid ${T.grey200}`, background:T.white, color:T.grey600, cursor:"pointer", fontFamily:T.font, display:"flex", alignItems:"center", gap:4 }}>
+                  ⬇ Download
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div style={{ background:T.white, borderRadius:12, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", display:"flex", flexDirection:"column", gap:14, marginBottom:20 }}>
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:T.black, display:"block", marginBottom:6 }}>Signer Name <span style={{ color:T.redPrimary }}>*</span></label>
+                <input value={signerName} onChange={e => { setSignerName(e.target.value); setSignerNameErr(false); }} placeholder="Enter"
+                  style={{ width:"100%", boxSizing:"border-box", padding:"10px 12px", border:`1.5px solid ${signerNameErr ? T.redPrimary : T.grey200}`, borderRadius:8, fontSize:14, fontFamily:T.font, outline:"none", color:T.black }} />
+                {signerNameErr && <div style={{ fontSize:12, color:T.redPrimary, marginTop:4 }}>Signer name is required.</div>}
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:T.black, display:"block", marginBottom:6 }}>Signer Email ID <span style={{ color:T.redPrimary }}>*</span></label>
+                <input type="email" value={signerEmail} onChange={e => { setSignerEmail(e.target.value); setSignerEmailErr(false); }} placeholder="Enter"
+                  style={{ width:"100%", boxSizing:"border-box", padding:"10px 12px", border:`1.5px solid ${signerEmailErr ? T.redPrimary : T.grey200}`, borderRadius:8, fontSize:14, fontFamily:T.font, outline:"none", color:T.black }} />
+                {signerEmailErr && <div style={{ fontSize:12, color:T.redPrimary, marginTop:4 }}>Please enter a valid email address.</div>}
+              </div>
+            </div>
+
+            <div style={{ display:"flex", gap:10 }}>
+              <BtnSecondary onClick={() => setMsaSubScreen(null)} style={{ flex:1, padding:"12px" }}>Go back</BtnSecondary>
+              <BtnPrimary style={{ flex:1, padding:"12px" }} onClick={() => {
+                let ok = true;
+                if (!signerName.trim()) { setSignerNameErr(true); ok = false; }
+                if (!signerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signerEmail)) { setSignerEmailErr(true); ok = false; }
+                if (!ok) return;
+                setMsaSentAt(new Date());
+                setMsaStatus("sent");
+                setMsaSubScreen("tracking");
+              }}>Submit</BtnPrimary>
+            </div>
+          </div>
+
+        ) : msaSubScreen === "tracking" ? (
+
+          /* ── Screen 2: eSign Tracking ── */
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:16 }}>Step 3 of 3</div>
+
+            {/* Green success banner */}
+            <div style={{ background:T.greenBg, border:`1px solid ${T.greenBorder}`, borderRadius:12, padding:"16px 18px", marginBottom:24, display:"flex", alignItems:"flex-start", gap:12 }}>
+              <div style={{ width:30, height:30, borderRadius:"50%", background:T.greenText, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:T.white, fontSize:14, fontWeight:700 }}>✓</div>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:T.greenText, marginBottom:3 }}>Multi-Currency Account Activation Request Submitted</div>
+                <div style={{ fontSize:13, color:T.greenText, opacity:0.85 }}>Your MSA has been successfully sent for electronic signature.</div>
+              </div>
+            </div>
+
+            {/* Horizontal progress tracker */}
+            <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", padding:"22px 24px", marginBottom:14 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:T.black, marginBottom:20 }}>eSign Progress</div>
+              <div style={{ display:"flex", alignItems:"flex-start" }}>
+                {/* Step 1 — sent (always complete) */}
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", flex:1 }}>
+                  <div style={{ width:28, height:28, borderRadius:"50%", background:T.greenText, border:`2px solid ${T.greenText}`, display:"flex", alignItems:"center", justifyContent:"center", color:T.white, fontSize:13, fontWeight:700 }}>✓</div>
+                  <div style={{ fontSize:12, fontWeight:600, color:T.greenText, marginTop:8, textAlign:"center" }}>Agreement sent</div>
+                  <div style={{ fontSize:11, color:T.grey400, marginTop:2, textAlign:"center", wordBreak:"break-all" }}>to {signerEmail}</div>
+                  {msaSentAt && <div style={{ fontSize:11, color:T.grey400, marginTop:3, textAlign:"center" }}>{msaSentAt.toLocaleString("en-IN", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:true })}</div>}
+                </div>
+                {/* Connector */}
+                <div style={{ height:2, flex:1, background: msaStatus === "signed" ? T.greenText : T.grey200, marginTop:14, flexShrink:0 }} />
+                {/* Step 2 — signed (pending until done) */}
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", flex:1 }}>
+                  <div style={{ width:28, height:28, borderRadius:"50%", background: msaStatus === "signed" ? T.greenText : T.white, border:`2px solid ${msaStatus === "signed" ? T.greenText : T.grey200}`, display:"flex", alignItems:"center", justifyContent:"center", color: msaStatus === "signed" ? T.white : T.grey300, fontSize:13, fontWeight:700 }}>
+                    {msaStatus === "signed" ? "✓" : ""}
+                  </div>
+                  <div style={{ fontSize:12, fontWeight:600, color: msaStatus === "signed" ? T.greenText : T.grey400, marginTop:8, textAlign:"center" }}>Agreement Signed</div>
+                  <div style={{ fontSize:11, color:T.grey400, marginTop:3, textAlign:"center" }}>
+                    {msaStatus === "signed" && signedAt ? signedAt.toLocaleString("en-IN", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:true }) : "Pending signature"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Details table */}
+            <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"hidden", marginBottom:14 }}>
+              <div style={{ padding:"12px 20px", borderBottom:`1px solid ${T.grey100}`, display:"flex", alignItems:"center" }}>
+                <span style={{ fontSize:12, color:T.grey400, fontWeight:500, flex:1 }}>Signer (Customer)</span>
+                <span style={{ fontSize:13, color:T.black, fontWeight:600 }}>{signerName}</span>
+              </div>
+              <div style={{ padding:"12px 20px", display:"flex", alignItems:"center" }}>
+                <span style={{ fontSize:12, color:T.grey400, fontWeight:500, flex:1 }}>Entity</span>
+                <span style={{ fontSize:13, color:T.black, fontWeight:600 }}>{bizName}</span>
+              </div>
+            </div>
+
+            {/* Prototype: simulate signing */}
+            {msaStatus !== "signed" && (
+              <div style={{ background:T.amberBg, border:`1px solid ${T.amberBorder}`, borderRadius:8, padding:"10px 14px", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
+                <span style={{ fontSize:12, color:T.amberText }}>Prototype: simulate the signer completing eSign</span>
+                <button onClick={() => { setMsaStatus("signed"); setSignedAt(new Date()); }}
+                  style={{ padding:"5px 12px", fontSize:12, fontWeight:600, borderRadius:6, border:`1.5px solid ${T.amberText}`, background:"transparent", color:T.amberText, cursor:"pointer", fontFamily:T.font, whiteSpace:"nowrap", flexShrink:0 }}>
+                  Mark as Signed ✓
+                </button>
+              </div>
+            )}
+
+            <div style={{ display:"flex", gap:10 }}>
+              <BtnSecondary onClick={() => setMsaSubScreen(null)} style={{ flex:1, padding:"12px" }}>Go Back</BtnSecondary>
+              <BtnPrimary onClick={() => setMsaSubScreen("edit")} style={{ flex:1, padding:"12px" }}>Edit eSign Info</BtnPrimary>
+            </div>
+          </div>
+
+        ) : msaSubScreen === "edit" ? (
+
+          /* ── Screen 3: Edit Signer Information ── */
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 3 of 3</div>
+            <h2 style={{ fontSize:22, fontWeight:800, color:T.black, margin:"0 0 20px" }}>Edit Signer Information</h2>
+
+            <div style={{ background:T.white, borderRadius:12, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", display:"flex", flexDirection:"column", gap:14, marginBottom:16 }}>
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:T.black, display:"block", marginBottom:6 }}>Signer Name</label>
+                <input value={signerName} onChange={e => setSignerName(e.target.value)}
+                  style={{ width:"100%", boxSizing:"border-box", padding:"10px 12px", border:`1.5px solid ${T.grey200}`, borderRadius:8, fontSize:14, fontFamily:T.font, outline:"none", color:T.black }} />
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:T.black, display:"block", marginBottom:6 }}>Enter email ID</label>
+                <div style={{ display:"flex", gap:8 }}>
+                  <input type="email" value={signerEmail} onChange={e => setSignerEmail(e.target.value)}
+                    style={{ flex:1, padding:"10px 12px", border:`1.5px solid ${T.grey200}`, borderRadius:8, fontSize:14, fontFamily:T.font, outline:"none", color:T.black }} />
+                  <button onClick={() => window.open("about:blank", "_blank")}
+                    style={{ padding:"10px 16px", fontSize:13, fontWeight:600, borderRadius:8, border:`1.5px solid ${T.redPrimary}`, background:T.white, color:T.redPrimary, cursor:"pointer", fontFamily:T.font, whiteSpace:"nowrap", flexShrink:0 }}>
+                    View MSA
+                  </button>
+                </div>
+                {msaSentAt && (
+                  <div style={{ fontSize:12, color:T.greenText, marginTop:6 }}>
+                    Document was last sent for eSign on {msaSentAt.toLocaleDateString("en-IN", { day:"2-digit", month:"long", year:"numeric" })}, at {msaSentAt.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit", hour12:true })}.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Amber note */}
+            <div style={{ background:T.amberBg, border:`1px solid ${T.amberBorder}`, borderRadius:10, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"flex-start", gap:8 }}>
+              <span style={{ flexShrink:0 }}>⚠️</span>
+              <div style={{ fontSize:13, color:T.amberText, lineHeight:1.5 }}>
+                <strong>Note:</strong> The agreement will be sent to the provided email ID for the purpose of eSign.
+              </div>
+            </div>
+
+            <div style={{ display:"flex", gap:10 }}>
+              <BtnSecondary onClick={() => setMsaSubScreen("tracking")} style={{ flex:1, padding:"12px" }}>Go back</BtnSecondary>
+              <BtnPrimary style={{ flex:1, padding:"12px" }} onClick={() => {
+                setMsaSentAt(new Date());
+                setMsaStatus("sent");
+                setSignedAt(null);
+                setMsaSubScreen("tracking");
+              }}>Send Document for eSign</BtnPrimary>
+            </div>
+          </div>
+
         ) : (
+
+          /* ── Step 3 default: main MSA view ── */
           <div>
             <div style={{ fontSize:11, fontWeight:700, color:T.redPrimary, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Step 3 of 3</div>
             <h2 style={{ fontSize:24, fontWeight:800, color:T.black, margin:"0 0 6px" }}>Sign Master Services Agreement</h2>
@@ -2311,45 +2669,36 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
             {/* Document preview card */}
             <div style={{ background:T.white, borderRadius:12, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", marginBottom:16, overflow:"hidden" }}>
               <div style={{ padding:"20px" }}>
-                <div style={{ display:"flex", alignItems:"flex-start", gap:14, marginBottom:20 }}>
+                <div style={{ display:"flex", alignItems:"flex-start", gap:14, marginBottom: msaStatus === "signed" ? 20 : 0 }}>
                   <div style={{ width:44, height:52, borderRadius:6, background:"#FEE2E2", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:22 }}>📄</div>
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:14, fontWeight:700, color:T.black, marginBottom:3 }}>Decfin_IFSC_MSA_Template.pdf</div>
                     <div style={{ fontSize:12, color:T.grey400 }}>Master Services Agreement · 20 pages</div>
                   </div>
-                  {msaStatus === "signed"  && <span style={{ background:T.greenBg,   color:T.greenText,   border:`1px solid ${T.greenBorder}`,   borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>✓ Signed</span>}
-                  {msaStatus === "pending" && <span style={{ background:T.amberBg,   color:T.amberText,   border:`1px solid ${T.amberBorder}`,   borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Awaiting signature</span>}
-                  {msaStatus === "signing" && <span style={{ background:T.amberBg,   color:T.amberText,   border:`1px solid ${T.amberBorder}`,   borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Signing…</span>}
-                  {msaStatus === "error"   && <span style={{ background:T.redErrBg,  color:T.redErrText,  border:`1px solid ${T.redErrBorder}`,  borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Failed</span>}
+                  {msaStatus === "signed" && <span style={{ background:T.greenBg, color:T.greenText, border:`1px solid ${T.greenBorder}`, borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>✓ Signed</span>}
+                  {(msaStatus === "pending" || msaStatus === "sent") && <span style={{ background:T.amberBg, color:T.amberText, border:`1px solid ${T.amberBorder}`, borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:600, flexShrink:0 }}>Awaiting signature</span>}
                 </div>
-                <div style={{ borderTop:`1px solid ${T.grey100}`, paddingTop:16, display:"flex", flexDirection:"column", gap:12 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:12, color:T.grey400, fontWeight:500 }}>Signer (Customer)</span>
-                    <span style={{ fontSize:12, color:T.black, fontWeight:600 }}>{bizName}</span>
+                {msaStatus === "signed" && (
+                  <div style={{ borderTop:`1px solid ${T.grey100}`, paddingTop:16, display:"flex", flexDirection:"column", gap:12 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <span style={{ fontSize:12, color:T.grey400, fontWeight:500 }}>Signer (Customer)</span>
+                      <span style={{ fontSize:12, color:T.black, fontWeight:600 }}>{signerName || bizName}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
+                      <span style={{ fontSize:12, color:T.grey400, fontWeight:500, flexShrink:0 }}>Counterparty</span>
+                      <span style={{ fontSize:12, color:T.black, fontWeight:600, textAlign:"right" }}>DecFin Fintech Services IFSC Private Limited</span>
+                    </div>
                   </div>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
-                    <span style={{ fontSize:12, color:T.grey400, fontWeight:500, flexShrink:0 }}>Counterparty</span>
-                    <span style={{ fontSize:12, color:T.black, fontWeight:600, textAlign:"right" }}>DecFin Fintech Services IFSC Private Limited</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
-
-            {msaStatus === "error" && (
-              <div style={{ background:T.redErrBg, border:`1px solid ${T.redErrBorder}`, borderRadius:10, padding:"12px 16px", marginBottom:16, fontSize:13, color:T.redErrText, fontWeight:500 }}>
-                eSign failed or timed out. Please try again.
-              </div>
-            )}
 
             <div style={{ display:"flex", gap:10, marginBottom:12 }}>
               {msaStatus === "signed" ? (
                 <div style={{ flex:1, background:T.greenBg, border:`1px solid ${T.greenBorder}`, borderRadius:8, padding:"13px", textAlign:"center", fontSize:14, fontWeight:700, color:T.greenText }}>✓ Document Signed</div>
               ) : (
-                <BtnPrimary
-                  onClick={msaStatus !== "signing" ? handleESign : undefined}
-                  style={{ flex:1, padding:"13px", opacity: msaStatus === "signing" ? 0.7 : 1, cursor: msaStatus === "signing" ? "wait" : "pointer" }}
-                >
-                  {msaStatus === "signing" ? "Opening eSign…" : msaStatus === "error" ? "Try Again" : "Review & eSign"}
+                <BtnPrimary onClick={() => setMsaSubScreen(msaStatus === "sent" ? "tracking" : "form")} style={{ flex:1, padding:"13px" }}>
+                  {msaStatus === "sent" ? "View eSign Status" : "Review & eSign"}
                 </BtnPrimary>
               )}
               <BtnSecondary style={{ padding:"13px 18px", flexShrink:0 }}>⬇ Download PDF</BtnSecondary>
@@ -2367,6 +2716,7 @@ function SetupScreen({ setPage, onNav, dummy, setDummy }) {
           </div>
         )}
       </div>
+      {showMSAViewer && <MSAViewerModal onClose={() => setShowMSAViewer(false)} />}
     </AppShell>
   );
 }
